@@ -1,0 +1,87 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useUser } from '@/hooks/useUser'
+
+const links = [
+  { label: 'Overview', href: '/dashboard', icon: '◈' },
+  { label: 'My Listings', href: '/dashboard/listings', icon: '☰' },
+  { label: 'Create Listing', href: '/dashboard/listings/new', icon: '+' },
+  { label: 'Orders', href: '/dashboard/orders', icon: '⟳' },
+  { label: 'Earnings', href: '/dashboard/earnings', icon: '◎' },
+  { label: 'Settings', href: '/dashboard/settings', icon: '⚙' },
+]
+
+const tierColors: Record<string, string> = {
+  ANON: 'text-white/40',
+  VERIFIED: 'text-lime-400',
+  ELITE: 'text-violet-400',
+  INSTITUTION: 'text-sky-400',
+}
+
+export default function Sidebar() {
+  const pathname = usePathname()
+  const { dbUser, loading } = useUser()
+
+  return (
+    <aside className="w-56 shrink-0 flex flex-col">
+
+      <div className="bg-[#111114] border border-white/[0.07] rounded-xl p-4 mb-4">
+        {loading ? (
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
+            <div className="w-24 h-3 rounded bg-white/5 animate-pulse mt-3" />
+            <div className="w-16 h-3 rounded bg-white/5 animate-pulse" />
+          </div>
+        ) : dbUser ? (
+          <>
+            <div className="w-10 h-10 rounded-full bg-lime-400 flex items-center justify-center text-black font-bold text-sm mb-3">
+              {(dbUser.displayName ?? dbUser.email ?? dbUser.walletAddress ?? '?')[0].toUpperCase()}
+            </div>
+            <div className="text-sm font-semibold text-white truncate">
+              {dbUser.displayName ?? dbUser.username ?? 'Anon'}
+            </div>
+            <div className={`text-xs font-mono mt-0.5 ${tierColors[dbUser.tier]}`}>
+              {dbUser.tier}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-1.5">
+              {[
+                { label: 'Listings', value: dbUser._count?.listings ?? 0 },
+                { label: 'Orders', value: dbUser._count?.ordersAsSeller ?? 0 },
+              ].map((s) => (
+                <div key={s.label} className="bg-white/[0.03] rounded-lg p-2">
+                  <div className="text-xs font-bold text-white">{s.value}</div>
+                  <div className="text-[10px] text-white/25 font-mono">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="text-xs text-white/30 font-mono">Not signed in</div>
+        )}
+      </div>
+
+      <nav className="flex flex-col gap-0.5">
+        {links.map((link) => {
+          const active = pathname === link.href
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
+                active
+                  ? 'bg-lime-400/10 text-lime-400 font-medium'
+                  : 'text-white/40 hover:text-white hover:bg-white/[0.04]'
+              }`}
+            >
+              <span className="font-mono text-xs w-4 text-center">{link.icon}</span>
+              {link.label}
+            </Link>
+          )
+        })}
+      </nav>
+
+    </aside>
+  )
+}

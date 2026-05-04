@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── USERS ───────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Auth
+  walletAddress String? @unique
+  email         String? @unique
+  phone         String? @unique
+  privyUserId   String? @unique
+
+  // Profile
+  username    String? @unique
+  displayName String?
+  bio         String?
+  avatarUrl   String?
+  bannerUrl   String?
+
+  // Trust
+  tier         UserTier @default(ANON)
+  isVerified   Boolean  @default(false)
+  kycCompleted Boolean  @default(false)
+
+  // Relations
+  listings        Listing[]
+  ordersAsBuyer   Order[]   @relation("BuyerOrders")
+  ordersAsSeller  Order[]   @relation("SellerOrders")
+  reviewsGiven    Review[]  @relation("ReviewsGiven")
+  reviewsReceived Review[]  @relation("ReviewsReceived")
+
+  @@map("users")
+}
+
+enum UserTier {
+  ANON
+  VERIFIED
+  ELITE
+  INSTITUTION
+}
+
+// ─── LISTINGS ────────────────────────────────────────────────────────────────
+
+model Listing {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String
+  description String
+  category    Category
+  tags        String[]
+
+  status     ListingStatus @default(ACTIVE)
+  isFeatured Boolean       @default(false)
+
+  // Relations
+  sellerId String
+  seller   User      @relation(fields: [sellerId], references: [id])
+  packages Package[]
+  orders   Order[]
+
+  @@map("listings")
+}
+
+enum Category {
+  DEVELOPMENT
+  DESIGN_ART
+  MARKETING
+  COMMUNITY
+  CALLERS_KOLS
+  STRATEGY
+  RESEARCH_ALPHA
+  BROKERAGE
+  COMPLIANCE
+}
+
+enum ListingStatus {
+  ACTIVE
+  PAUSED
+  DRAFT
+  REMOVED
+}
+
+// ─── PACKAGES ────────────────────────────────────────────────────────────────
+
+model Package {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  price        Float
+  currency     String   @default("USDC")
+  deliveryDays Int
+  revisions    Int      @default(1)
+  features     String[]
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+  orders    Order[]
+
+  @@map("packages")
+}
+
+// ─── ORDERS ──────────────────────────────────────────────────────────────────
+
+model Order {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  status        OrderStatus   @default(PENDING)
+  amount        Float
+  currency      String        @default("USDC")
+  paymentMethod PaymentMethod
+  txHash        String?
+
+  escrowStatus EscrowStatus @default(HOLDING)
+  deliveredAt  DateTime?
+  completedAt  DateTime?
+  disputedAt   DateTime?
+
+  // Relations
+  buyerId   String
+  buyer     User    @relation("BuyerOrders", fields: [buyerId], references: [id])
+  sellerId  String
+  seller    User    @relation("SellerOrders", fields: [sellerId], references: [id])
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id])
+  review    Review?
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  ACTIVE
+  DELIVERED
+  COMPLETED
+  DISPUTED
+  CANCELLED
+  REFUNDED
+}
+
+enum EscrowStatus {
+  HOLDING
+  RELEASED
+  REFUNDED
+  DISPUTED
+}
+
+enum PaymentMethod {
+  CRYPTO_WALLET
+  CREDIT_CARD
+  INTERNAL_BALANCE
+}
+
+// ─── REVIEWS ─────────────────────────────────────────────────────────────────
+
+model Review {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  rating  Int
+  comment String?
+
+  orderId    String @unique
+  order      Order  @relation(fields: [orderId], references: [id])
+  reviewerId String
+  reviewer   User   @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  revieweeId String
+  reviewee   User   @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+
+  @@map("reviews")
+}
