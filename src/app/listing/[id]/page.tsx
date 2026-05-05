@@ -64,9 +64,9 @@ export default function ListingPage() {
     fetch(`/api/listings/${id}`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.success) {
-          setListing(data.data)
-          setSelectedPkg(data.data.packages[1] ?? data.data.packages[0])
+        if (data.listing) {
+          setListing(data.listing)
+          setSelectedPkg(data.listing.packages[1] ?? data.listing.packages[0])
         }
       })
       .finally(() => setLoading(false))
