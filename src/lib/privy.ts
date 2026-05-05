@@ -1,6 +1,9 @@
 import { PrivyClientConfig } from '@privy-io/react-auth'
 import { base } from 'viem/chains'
 
+export const PRIVY_APP_ID =
+  process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? 'cmorft6s700hc0ek0jbq495jx'
+
 export const privyConfig: PrivyClientConfig = {
   appearance: {
     theme: 'dark',

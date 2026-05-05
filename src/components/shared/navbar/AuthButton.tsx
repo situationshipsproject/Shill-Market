@@ -5,6 +5,15 @@ import { usePrivy } from '@privy-io/react-auth'
 export default function AuthButton() {
   const { ready, authenticated, user, login, logout } = usePrivy()
 
+  if (!ready) {
+    return (
+      <div className="flex gap-2 items-center">
+        <div className="h-7 w-20 rounded-md bg-white/[0.04] animate-pulse" />
+        <div className="h-7 w-28 rounded-md bg-white/[0.08] animate-pulse" />
+      </div>
+    )
+  }
+
   if (authenticated && user) {
     const display =
       user.wallet?.address
