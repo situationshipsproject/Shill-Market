@@ -16,6 +16,7 @@ interface DbUser {
   tier: 'ANON' | 'VERIFIED' | 'ELITE' | 'INSTITUTION'
   isVerified: boolean
   kycCompleted: boolean
+  isAdmin: boolean
   createdAt: string
   _count?: {
     listings: number

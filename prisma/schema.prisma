@@ -30,6 +30,7 @@ model User {
   tier         UserTier @default(ANON)
   isVerified   Boolean  @default(false)
   kycCompleted Boolean  @default(false)
+  isAdmin      Boolean  @default(false)
 
   // Relations
   listings        Listing[]

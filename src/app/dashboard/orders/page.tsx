@@ -8,45 +8,20 @@ import { useUser } from '@/hooks/useUser'
 
 type Tab = 'buying' | 'selling'
 
-const mockOrders = {
-  buying: [
-    {
-      id: 'ord-1',
-      title: 'Twitter spaces host + X thread campaign',
-      seller: 'DegenGhost',
-      amount: 180,
-      currency: 'USDC',
-      status: 'ACTIVE',
-      escrowStatus: 'HOLDING',
-      createdAt: '2 days ago',
-      deliveryDays: 3,
-    },
-    {
-      id: 'ord-2',
-      title: 'Memecoin brand kit — PFP, banner, memes pack',
-      seller: 'AlphaXDesign',
-      amount: 95,
-      currency: 'USDC',
-      status: 'COMPLETED',
-      escrowStatus: 'RELEASED',
-      createdAt: '2 weeks ago',
-      deliveryDays: 5,
-    },
-  ],
-  selling: [
-    {
-      id: 'ord-3',
-      title: 'Full Solana smart contract audit + deploy',
-      seller: 'You',
-      buyer: 'RektKing',
-      amount: 450,
-      currency: 'USDC',
-      status: 'DELIVERED',
-      escrowStatus: 'HOLDING',
-      createdAt: '1 day ago',
-      deliveryDays: 7,
-    },
-  ],
+interface Order {
+  id: string
+  status: string
+  escrowStatus: string
+  amount: number
+  currency: string
+  createdAt: string
+  deliveredAt?: string
+  completedAt?: string
+  disputedAt?: string
+  listing: { id: string; title: string; category: string }
+  package: { name: string; price: number; deliveryDays: number }
+  buyer: { username?: string; displayName?: string; walletAddress?: string }
+  seller: { username?: string; displayName?: string; walletAddress?: string }
 }
 
 const statusColor: Record<string, string> = {
@@ -56,6 +31,7 @@ const statusColor: Record<string, string> = {
   COMPLETED: 'text-lime-400 bg-lime-400/10 border-lime-400/20',
   DISPUTED: 'text-red-400 bg-red-400/10 border-red-400/20',
   CANCELLED: 'text-white/25 bg-white/5 border-white/10',
+  REFUNDED: 'text-white/25 bg-white/5 border-white/10',
 }
 
 const escrowColor: Record<string, string> = {
@@ -65,16 +41,59 @@ const escrowColor: Record<string, string> = {
   DISPUTED: 'text-red-400',
 }
 
+function displayName(u: { username?: string; displayName?: string; walletAddress?: string }) {
+  return u.displayName ?? u.username ?? (u.walletAddress ? `${u.walletAddress.slice(0, 6)}...` : 'Unknown')
+}
+
 export default function OrdersPage() {
-  const { authenticated, ready } = useUser()
+  const { privyUser, authenticated, ready } = useUser()
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('buying')
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   useEffect(() => {
     if (ready && !authenticated) router.push('/')
   }, [ready, authenticated, router])
 
-  const orders = mockOrders[tab]
+  useEffect(() => {
+    if (!privyUser?.id) return
+    fetchOrders()
+  }, [privyUser, tab])
+
+  async function fetchOrders() {
+    if (!privyUser?.id) return
+    setLoading(true)
+    try {
+      const res = await fetch(
+        `/api/orders?privyUserId=${privyUser.id}&role=${tab === 'buying' ? 'buyer' : 'seller'}`
+      )
+      const data = await res.json()
+      setOrders(data.orders ?? [])
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function escrowAction(orderId: string, action: string) {
+    if (!privyUser?.id) return
+    setActionLoading(orderId + action)
+    try {
+      const res = await fetch('/api/escrow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, orderId, privyUserId: privyUser.id }),
+      })
+      if (res.ok) await fetchOrders()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setActionLoading(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0b] text-[#e8e6e0]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -84,35 +103,34 @@ export default function OrdersPage() {
 
         <main className="flex-1 min-w-0">
 
-          {/* HEADER */}
           <div className="mb-8">
-            <div className="text-xs text-white/25 font-mono tracking-[2px] uppercase mb-2">
-              Dashboard
-            </div>
+            <div className="text-xs text-white/25 font-mono tracking-[2px] uppercase mb-2">Dashboard</div>
             <h1 className="text-3xl font-bold text-white tracking-tight">Orders</h1>
           </div>
 
-          {/* TABS */}
           <div className="flex gap-1 mb-6 bg-[#111114] border border-white/[0.07] rounded-xl p-1 w-fit">
             {(['buying', 'selling'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
                 className={`px-5 py-2 rounded-lg text-sm font-medium transition-all capitalize ${
-                  tab === t
-                    ? 'bg-white/[0.07] text-white'
-                    : 'text-white/30 hover:text-white/60'
+                  tab === t ? 'bg-white/[0.07] text-white' : 'text-white/30 hover:text-white/60'
                 }`}
               >
-                {t === 'buying' ? `Buying (${mockOrders.buying.length})` : `Selling (${mockOrders.selling.length})`}
+                {t === 'buying' ? 'Buying' : 'Selling'}
               </button>
             ))}
           </div>
 
-          {/* ORDERS */}
-          {orders.length === 0 ? (
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-[#111114] border border-white/[0.07] rounded-xl p-5 h-28 animate-pulse" />
+              ))}
+            </div>
+          ) : orders.length === 0 ? (
             <div className="bg-[#111114] border border-white/[0.07] border-dashed rounded-xl p-16 text-center">
-              <div className="text-3xl mb-4">⟳</div>
+              <div className="text-3xl mb-4">&#x27F3;</div>
               <div className="text-white font-semibold mb-2">No orders yet</div>
               <div className="text-sm text-white/35">
                 {tab === 'buying'
@@ -130,52 +148,76 @@ export default function OrdersPage() {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 min-w-0 pr-4">
                       <div className="text-sm font-semibold text-white mb-1 truncate">
-                        {order.title}
+                        {order.listing.title}
                       </div>
                       <div className="text-xs text-white/30 font-mono">
-                        {tab === 'buying' ? `Seller: ${order.seller}` : `Buyer: ${(order as any).buyer}`}
+                        {tab === 'buying'
+                          ? `Seller: ${displayName(order.seller)}`
+                          : `Buyer: ${displayName(order.buyer)}`}
                         {' · '}
-                        {order.createdAt}
+                        {order.package.name} package
+                        {' · '}
+                        {new Date(order.createdAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${statusColor[order.status]}`}>
-                        {order.status}
-                      </span>
-                    </div>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${statusColor[order.status]}`}>
+                      {order.status}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between pt-3 border-t border-white/[0.05]">
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <div className="text-base font-bold text-white">
-                          ${order.amount}{' '}
-                          <span className="text-xs font-normal text-white/25 font-mono">
-                            {order.currency}
-                          </span>
-                        </div>
+                    <div className="flex items-center gap-5">
+                      <div className="text-base font-bold text-white">
+                        ${order.amount}{' '}
+                        <span className="text-xs font-normal text-white/25 font-mono">{order.currency}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <div className="text-xs font-mono">🔒</div>
+                        <span className="text-xs">&#x1F512;</span>
                         <span className={`text-xs font-mono ${escrowColor[order.escrowStatus]}`}>
-                          Escrow: {order.escrowStatus}
+                          {order.escrowStatus}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex gap-2">
-                      {order.status === 'DELIVERED' && tab === 'buying' && (
-                        <button className="text-xs px-3 py-1.5 rounded-lg bg-lime-400 text-black font-semibold hover:bg-lime-300 transition-all">
-                          Confirm & Release
+                      {tab === 'selling' && order.status === 'PENDING' && (
+                        <button
+                          onClick={() => escrowAction(order.id, 'activate')}
+                          disabled={!!actionLoading}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-sky-400/10 text-sky-400 border border-sky-400/20 hover:bg-sky-400/20 transition-all disabled:opacity-40"
+                        >
+                          Accept Order
                         </button>
                       )}
-                      {order.status === 'ACTIVE' && tab === 'selling' && (
-                        <button className="text-xs px-3 py-1.5 rounded-lg bg-lime-400 text-black font-semibold hover:bg-lime-300 transition-all">
-                          Mark Delivered
+                      {tab === 'selling' && order.status === 'ACTIVE' && (
+                        <button
+                          onClick={() => escrowAction(order.id, 'deliver')}
+                          disabled={!!actionLoading}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-amber-400/10 text-amber-400 border border-amber-400/20 hover:bg-amber-400/20 transition-all disabled:opacity-40"
+                        >
+                          {actionLoading === order.id + 'deliver' ? 'Marking...' : 'Mark Delivered'}
+                        </button>
+                      )}
+                      {tab === 'buying' && order.status === 'DELIVERED' && (
+                        <button
+                          onClick={() => escrowAction(order.id, 'confirm')}
+                          disabled={!!actionLoading}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-lime-400 text-black font-semibold hover:bg-lime-300 transition-all disabled:opacity-40"
+                        >
+                          {actionLoading === order.id + 'confirm' ? 'Releasing...' : 'Confirm & Release'}
+                        </button>
+                      )}
+                      {['ACTIVE', 'PENDING', 'DELIVERED'].includes(order.status) && (
+                        <button
+                          onClick={() => escrowAction(order.id, 'dispute')}
+                          disabled={!!actionLoading}
+                          className="text-xs px-3 py-1.5 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-40"
+                        >
+                          Dispute
                         </button>
                       )}
                       <button className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all">
-                        View Details
+                        Details
                       </button>
                     </div>
                   </div>
@@ -184,13 +226,12 @@ export default function OrdersPage() {
             </div>
           )}
 
-          {/* ESCROW INFO */}
           <div className="mt-6 bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 flex items-start gap-3">
-            <span className="text-lg">🔒</span>
+            <span className="text-lg">&#x1F512;</span>
             <div>
               <div className="text-xs font-semibold text-white/50 mb-1">How escrow works</div>
               <div className="text-xs text-white/25 leading-relaxed">
-                Funds are held securely when an order is placed. The seller delivers the work, then you confirm and funds are released. If there&apos;s a dispute, the ShillMarket team steps in to arbitrate within 72 hours.
+                Funds are held when an order is placed. The seller delivers, then the buyer confirms and funds release. Disputes are arbitrated by the ShillMarket team within 72 hours.
               </div>
             </div>
           </div>
