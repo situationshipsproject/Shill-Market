@@ -30,13 +30,13 @@ export default function AuthButton() {
   return (
     <div className="flex gap-2 items-center">
       <button
-        onClick={ready ? login : undefined}
+        onClick={login}
         className="text-sm px-4 py-1.5 rounded-md border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all"
       >
         Sign In
       </button>
       <button
-        onClick={ready ? login : undefined}
+        onClick={login}
         className="text-sm font-semibold px-4 py-1.5 rounded-md bg-lime-400 text-black hover:bg-lime-300 transition-all"
       >
         Connect Wallet
