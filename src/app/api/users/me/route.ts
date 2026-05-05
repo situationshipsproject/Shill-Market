@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { verifyPrivyToken } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
-  const privyUserId = await verifyPrivyToken(req)
+  const privyUserId = req.headers.get('x-privy-user-id')
   if (!privyUserId) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
@@ -41,20 +40,20 @@ export async function GET(req: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 })
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, data: user })
+    return NextResponse.json({ user })
   } catch (err) {
     console.error('[GET /api/users/me]', err)
-    return NextResponse.json({ success: false, error: 'Failed to fetch user' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
   }
 }
 
 export async function PATCH(req: NextRequest) {
-  const privyUserId = await verifyPrivyToken(req)
+  const privyUserId = req.headers.get('x-privy-user-id')
   if (!privyUserId) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
@@ -72,9 +71,9 @@ export async function PATCH(req: NextRequest) {
       },
     })
 
-    return NextResponse.json({ success: true, data: user })
+    return NextResponse.json({ user })
   } catch (err) {
     console.error('[PATCH /api/users/me]', err)
-    return NextResponse.json({ success: false, error: 'Failed to update user' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 })
   }
 }
