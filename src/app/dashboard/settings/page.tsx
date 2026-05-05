@@ -83,16 +83,21 @@ export default function SettingsPage() {
 
           <div className="bg-[#111114] border border-white/[0.07] rounded-xl p-6 max-w-xl mt-4">
             <div className="text-xs text-white/25 font-mono tracking-[2px] uppercase mb-5">Account</div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {[
-                { label: 'Privy ID', value: privyUser?.id?.slice(0, 24) + '...' },
-                { label: 'Wallet', value: dbUser?.walletAddress ? dbUser.walletAddress.slice(0, 8) + '...' + dbUser.walletAddress.slice(-6) : 'Not connected' },
-                { label: 'Email', value: dbUser?.email ?? 'Not connected' },
+                { label: 'Privy ID', value: privyUser?.id ?? '' },
+                { label: 'Wallet', value: dbUser?.walletAddress ?? '' },
+                { label: 'Email', value: dbUser?.email ?? '' },
                 { label: 'Tier', value: dbUser?.tier ?? 'ANON' },
               ].map((item) => (
-                <div key={item.label} className="flex justify-between items-center py-2 border-b border-white/[0.05] last:border-0">
-                  <span className="text-xs text-white/30 font-mono">{item.label}</span>
-                  <span className="text-xs text-white/60 font-mono">{item.value}</span>
+                <div key={item.label}>
+                  <label className="text-xs text-white/40 font-mono block mb-1.5">{item.label}</label>
+                  <input
+                    readOnly
+                    value={item.value || 'Not connected'}
+                    onFocus={(e) => e.target.select()}
+                    className="w-full bg-[#0a0a0b] border border-white/[0.07] rounded-lg px-3 py-2.5 text-xs text-white/60 font-mono outline-none cursor-text select-all"
+                  />
                 </div>
               ))}
             </div>
