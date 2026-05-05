@@ -29,6 +29,14 @@ export async function GET(req: NextRequest) {
           orderBy: { createdAt: 'desc' },
           take: 5,
         },
+        _count: {
+          select: {
+            listings: true,
+            ordersAsBuyer: true,
+            ordersAsSeller: true,
+            reviewsReceived: true,
+          },
+        },
       },
     })
 

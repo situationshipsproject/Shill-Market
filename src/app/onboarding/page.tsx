@@ -52,7 +52,7 @@ const STEPS = [
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const { privyUser } = useUser()
+  const { privyUser, getAccessToken } = useUser()
   const [step, setStep] = useState<Step>(1)
   const [submitting, setSubmitting] = useState(false)
 
@@ -102,24 +102,33 @@ export default function OnboardingPage() {
   const handleFinish = async () => {
     setSubmitting(true)
     try {
+      const token = await getAccessToken()
+      const authHeader = { Authorization: `Bearer ${token}` }
+
       await fetch('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
-          privyUserId: privyUser?.id,
+          walletAddress: privyUser?.wallet?.address,
+          email: privyUser?.email?.address,
+        }),
+      })
+
+      await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...authHeader },
+        body: JSON.stringify({
           username: identity.username,
           displayName: identity.displayName,
           bio: identity.bio,
-          tier: selectedTier,
         }),
       })
 
       if (listing.title && listing.description) {
         await fetch('/api/listings', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeader },
           body: JSON.stringify({
-            privyUserId: privyUser?.id,
             title: listing.title,
             description: listing.description,
             category: selectedCategories[0]?.toUpperCase().replace('-', '_'),

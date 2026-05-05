@@ -1,4 +1,5 @@
 import { PrivyClientConfig } from '@privy-io/react-auth'
+import { base } from 'viem/chains'
 
 export const privyConfig: PrivyClientConfig = {
   appearance: {
@@ -6,6 +7,7 @@ export const privyConfig: PrivyClientConfig = {
     accentColor: '#c8f135',
   },
   loginMethods: ['wallet', 'email', 'google', 'twitter'],
+  defaultChain: base,
   embeddedWallets: {
     ethereum: {
       createOnLogin: 'users-without-wallets',
