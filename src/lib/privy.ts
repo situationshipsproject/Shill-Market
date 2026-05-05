@@ -1,13 +1,17 @@
-import type { PrivyClientConfig } from '@privy-io/react-auth'
+import { PrivyClientConfig } from '@privy-io/react-auth'
 
 export const privyConfig: PrivyClientConfig = {
-  loginMethods: ['wallet', 'email', 'google', 'twitter'],
   appearance: {
     theme: 'dark',
-    accentColor: '#a3e635',
-    logo: '',
+    accentColor: '#c8f135',
   },
+  loginMethods: ['wallet', 'email', 'google', 'twitter'],
   embeddedWallets: {
-    createOnLogin: 'users-without-wallets',
+    ethereum: {
+      createOnLogin: 'users-without-wallets',
+    },
+    solana: {
+      createOnLogin: 'users-without-wallets',
+    },
   },
 }
