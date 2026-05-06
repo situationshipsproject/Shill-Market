@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { verifyPrivyToken } from '@/lib/auth'
+
+async function getAdminUser(req: NextRequest) {
+  const privyUserId = req.headers.get('x-privy-user-id')
+  if (!privyUserId) return null
+  const user = await prisma.user.findUnique({ where: { privyUserId } })
+  return user?.isAdmin ? user : null
+}
 
 export async function GET(req: NextRequest) {
   try {
-    const privyUserId = await verifyPrivyToken(req)
-    if (!privyUserId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const user = await prisma.user.findUnique({ where: { privyUserId } })
-    if (!user?.isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const admin = await getAdminUser(req)
+    if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const orders = await prisma.order.findMany({
       include: {

@@ -17,6 +17,7 @@ interface DbUser {
   isVerified: boolean
   kycCompleted: boolean
   isAdmin: boolean
+  isSuperAdmin: boolean
   createdAt: string
   _count?: {
     listings: number

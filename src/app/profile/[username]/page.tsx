@@ -24,7 +24,7 @@ interface Review {
   comment: string | null
   createdAt: string
   reviewer: { username: string | null; displayName: string | null; avatarUrl: string | null; tier: string }
-  listing: { title: string }
+  order: { listing: { title: string } }
 }
 
 interface Profile {
@@ -230,7 +230,7 @@ export default function ProfilePage() {
                               {review.reviewer.displayName ?? review.reviewer.username}
                             </div>
                             <div className="text-[10px] text-white/25 font-mono">
-                              {review.listing.title.slice(0, 40)}...
+                              {review.order.listing.title.slice(0, 40)}...
                             </div>
                           </div>
                         </div>

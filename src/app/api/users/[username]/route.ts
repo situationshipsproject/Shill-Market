@@ -24,7 +24,9 @@ export async function GET(
             reviewer: {
               select: { username: true, displayName: true, avatarUrl: true, tier: true },
             },
-            listing: { select: { title: true } },
+            order: {
+              include: { listing: { select: { title: true } } },
+            },
           },
           orderBy: { createdAt: 'desc' },
           take: 20,
@@ -45,7 +47,7 @@ export async function GET(
 
     const avgRating =
       user.reviewsReceived.length
-        ? user.reviewsReceived.reduce((sum, r) => sum + r.rating, 0) / user.reviewsReceived.length
+        ? user.reviewsReceived.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / user.reviewsReceived.length
         : null
 
     return NextResponse.json({ user, avgRating })
