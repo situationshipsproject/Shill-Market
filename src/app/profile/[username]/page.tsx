@@ -120,7 +120,7 @@ export default function ProfilePage() {
 
       <div className="relative h-36 bg-gradient-to-r from-[#111114] via-[#18181c] to-[#111114] border-b border-white/[0.05] overflow-hidden">
         {profile.bannerUrl && (
-          <Image src={profile.bannerUrl} alt="Banner" fill className="object-cover" />
+          <Image src={profile.bannerUrl} alt="Banner" fill className="object-cover" unoptimized />
         )}
       </div>
 
@@ -130,7 +130,7 @@ export default function ProfilePage() {
           <div className="flex items-end gap-5">
             <div className="w-20 h-20 rounded-2xl border-4 border-[#0a0a0b] bg-lime-400 overflow-hidden relative flex items-center justify-center">
               {profile.avatarUrl ? (
-                <Image src={profile.avatarUrl} alt={profile.displayName ?? profile.username ?? 'Avatar'} fill className="object-cover" />
+                <Image src={profile.avatarUrl} alt={profile.displayName ?? profile.username ?? 'Avatar'} fill className="object-cover" unoptimized />
               ) : (
                 <span className="text-2xl font-bold text-black">{initials}</span>
               )}
@@ -234,7 +234,7 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-full bg-violet-500 overflow-hidden relative flex items-center justify-center text-xs font-bold text-white">
                             {review.reviewer.avatarUrl ? (
-                              <Image src={review.reviewer.avatarUrl} alt="" fill className="object-cover" />
+                              <Image src={review.reviewer.avatarUrl} alt="" fill className="object-cover" unoptimized />
                             ) : (
                               (review.reviewer.displayName ?? review.reviewer.username ?? '?')[0].toUpperCase()
                             )}

@@ -22,27 +22,31 @@ export default function SettingsPage() {
 
   const initials = ((dbUser?.displayName ?? dbUser?.username ?? dbUser?.email ?? '?')[0]).toUpperCase()
 
-  async function uploadFile(file: File, type: 'avatar' | 'banner'): Promise<string | null> {
-    if (!privyUser?.id) return null
-    const form = new FormData()
-    form.append('file', file)
-    form.append('type', type)
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'x-privy-user-id': privyUser.id },
-      body: form,
+  function compressImage(file: File, maxW: number, maxH: number): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new window.Image()
+      const objectUrl = URL.createObjectURL(file)
+      img.onload = () => {
+        const scale = Math.min(1, maxW / img.width, maxH / img.height)
+        const w = Math.round(img.width * scale)
+        const h = Math.round(img.height * scale)
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
+        URL.revokeObjectURL(objectUrl)
+        resolve(canvas.toDataURL('image/jpeg', 0.82))
+      }
+      img.src = objectUrl
     })
-    if (!res.ok) return null
-    const data = await res.json()
-    return data.url ?? null
   }
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     setUploadingAvatar(true)
-    const url = await uploadFile(file, 'avatar')
-    if (url) setAvatarUrl(url)
+    const dataUrl = await compressImage(file, 300, 300)
+    setAvatarUrl(dataUrl)
     setUploadingAvatar(false)
   }
 
@@ -50,8 +54,8 @@ export default function SettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
     setUploadingBanner(true)
-    const url = await uploadFile(file, 'banner')
-    if (url) setBannerUrl(url)
+    const dataUrl = await compressImage(file, 1200, 400)
+    setBannerUrl(dataUrl)
     setUploadingBanner(false)
   }
 
@@ -92,7 +96,7 @@ export default function SettingsPage() {
               onClick={() => bannerInputRef.current?.click()}
             >
               {bannerUrl ? (
-                <Image src={bannerUrl} alt="Banner" fill className="object-cover" />
+                <Image src={bannerUrl} alt="Banner" fill className="object-cover" unoptimized />
               ) : null}
               <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-all">
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-white font-mono tracking-widest">
@@ -115,7 +119,7 @@ export default function SettingsPage() {
                   onClick={() => avatarInputRef.current?.click()}
                 >
                   {avatarUrl ? (
-                    <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
+                    <Image src={avatarUrl} alt="Avatar" fill className="object-cover" unoptimized />
                   ) : (
                     <span className="text-xl font-bold text-black">{initials}</span>
                   )}

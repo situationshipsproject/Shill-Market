@@ -133,7 +133,7 @@ export default function ListingPage() {
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 rounded-full bg-lime-400/20 overflow-hidden relative flex items-center justify-center text-xs font-bold text-lime-400">
                 {listing.seller.avatarUrl ? (
-                  <Image src={listing.seller.avatarUrl} alt="" fill className="object-cover" />
+                  <Image src={listing.seller.avatarUrl} alt="" fill className="object-cover" unoptimized />
                 ) : sellerInitials}
               </div>
               <span className="text-sm text-white/70 font-medium">
@@ -274,7 +274,7 @@ export default function ListingPage() {
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-lime-400/20 overflow-hidden relative flex items-center justify-center text-sm font-bold text-lime-400">
                     {listing.seller.avatarUrl ? (
-                      <Image src={listing.seller.avatarUrl} alt="" fill className="object-cover" />
+                      <Image src={listing.seller.avatarUrl} alt="" fill className="object-cover" unoptimized />
                     ) : sellerInitials}
                   </div>
                   <div>

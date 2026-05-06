@@ -39,7 +39,7 @@ export default function Sidebar() {
           <>
             <div className="w-10 h-10 rounded-full bg-lime-400 overflow-hidden relative flex items-center justify-center text-black font-bold text-sm mb-3">
               {dbUser.avatarUrl ? (
-                <Image src={dbUser.avatarUrl} alt="" fill className="object-cover" />
+                <Image src={dbUser.avatarUrl} alt="" fill className="object-cover" unoptimized />
               ) : (
                 (dbUser.displayName ?? dbUser.email ?? dbUser.walletAddress ?? '?')[0].toUpperCase()
               )}
