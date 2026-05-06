@@ -147,7 +147,8 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[#0a0a0b] text-[#e8e6e0]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       <Navbar />
 
-      <div className="relative h-36 bg-gradient-to-r from-[#111114] via-[#18181c] to-[#111114] border-b border-white/[0.05] overflow-hidden">
+      {/* Banner */}
+      <div className="relative h-40 bg-gradient-to-r from-[#111114] via-[#18181c] to-[#111114] border-b border-white/[0.05]">
         {profile.bannerUrl && (
           <Image src={profile.bannerUrl} alt="Banner" fill className="object-cover" unoptimized />
         )}
@@ -155,17 +156,18 @@ export default function ProfilePage() {
 
       <div className="max-w-5xl mx-auto px-8 pb-24">
 
-        <div className="flex items-end justify-between -mt-10 mb-8">
-          <div className="flex items-end gap-5">
-            <div className="w-20 h-20 rounded-2xl border-4 border-[#0a0a0b] bg-lime-400 overflow-hidden relative flex items-center justify-center">
+        {/* Profile header — avatar overlaps banner with negative margin */}
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-8" style={{ marginTop: '-40px' }}>
+          <div className="flex items-end gap-4">
+            <div className="w-20 h-20 rounded-2xl border-4 border-[#0a0a0b] bg-lime-400 overflow-hidden relative flex items-center justify-center shrink-0 z-10">
               {profile.avatarUrl ? (
                 <Image src={profile.avatarUrl} alt={profile.displayName ?? profile.username ?? 'Avatar'} fill className="object-cover" unoptimized />
               ) : (
                 <span className="text-2xl font-bold text-black">{initials}</span>
               )}
             </div>
-            <div className="pb-1">
-              <div className="flex items-center gap-2.5 mb-1">
+            <div className="pb-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <h1 className="text-xl font-bold text-white">
                   {profile.displayName ?? profile.username}
                 </h1>

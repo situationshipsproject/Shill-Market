@@ -42,6 +42,8 @@ export async function GET(req: NextRequest) {
           isVerified: true,
           isAdmin: true,
           isSuperAdmin: true,
+          socialsVerified: true,
+          isBanned: true,
           createdAt: true,
           _count: { select: { listings: true, ordersAsBuyer: true, ordersAsSeller: true } },
         },

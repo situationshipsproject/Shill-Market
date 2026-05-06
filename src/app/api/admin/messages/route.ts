@@ -16,23 +16,26 @@ export async function GET(req: NextRequest) {
   const limit = 20
   const skip = (page - 1) * limit
 
-  const userFilter = userId
-    ? { OR: [{ participant1Id: userId }, { participant2Id: userId }] }
-    : {}
+  // build conditions so userId + search can both apply via AND
+  const conditions: { OR?: object[] }[] = []
 
-  const searchFilter = search
-    ? {
-        OR: [
-          { participant1: { username: { contains: search, mode: 'insensitive' as const } } },
-          { participant1: { walletAddress: { contains: search, mode: 'insensitive' as const } } },
-          { participant2: { username: { contains: search, mode: 'insensitive' as const } } },
-          { participant2: { walletAddress: { contains: search, mode: 'insensitive' as const } } },
-          { messages: { some: { content: { contains: search, mode: 'insensitive' as const } } } },
-        ],
-      }
-    : {}
+  if (userId) {
+    conditions.push({ OR: [{ participant1Id: userId }, { participant2Id: userId }] })
+  }
 
-  const where = { ...userFilter, ...(search ? searchFilter : {}) }
+  if (search) {
+    conditions.push({
+      OR: [
+        { participant1: { username: { contains: search, mode: 'insensitive' as const } } },
+        { participant1: { walletAddress: { contains: search, mode: 'insensitive' as const } } },
+        { participant2: { username: { contains: search, mode: 'insensitive' as const } } },
+        { participant2: { walletAddress: { contains: search, mode: 'insensitive' as const } } },
+        { messages: { some: { content: { contains: search, mode: 'insensitive' as const } } } },
+      ],
+    })
+  }
+
+  const where = conditions.length > 0 ? { AND: conditions } : {}
 
   const [total, conversations] = await Promise.all([
     prisma.conversation.count({ where }),

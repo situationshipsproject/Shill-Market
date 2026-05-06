@@ -2,7 +2,6 @@
 
 import { usePrivy } from '@privy-io/react-auth'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 interface DbUser {
   id: string
@@ -30,7 +29,6 @@ interface DbUser {
 
 export function useUser() {
   const { ready, authenticated, user: privyUser, getAccessToken, logout } = usePrivy()
-  const router = useRouter()
   const [dbUser, setDbUser] = useState<DbUser | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -59,7 +57,8 @@ export function useUser() {
 
         if (res.status === 403) {
           await logout()
-          router.replace('/?banned=true')
+          // full-page redirect avoids re-render loops
+          window.location.replace('/?banned=true')
           return
         }
 
@@ -75,6 +74,7 @@ export function useUser() {
     }
 
     syncUser()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, authenticated, privyUser?.id])
 
   return { ready, authenticated, privyUser, dbUser, loading, getAccessToken }
