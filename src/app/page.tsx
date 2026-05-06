@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/shared/navbar/Navbar'
+import BannedBanner from '@/components/shared/BannedBanner'
 import { prisma } from '@/lib/prisma'
 import { getFUSDPrice } from '@/lib/besc'
 
@@ -59,6 +61,7 @@ export default async function HomePage() {
     <main className="min-h-screen bg-[#0a0a0b] text-[#e8e6e0]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
 
       <Navbar />
+      <Suspense><BannedBanner /></Suspense>
 
       {/* HERO */}
       <section className="max-w-4xl mx-auto px-8 pt-20 pb-16">

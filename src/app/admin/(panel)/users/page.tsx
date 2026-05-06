@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 
 interface AdminUser {
@@ -15,6 +16,7 @@ interface AdminUser {
   isAdmin: boolean
   isSuperAdmin: boolean
   socialsVerified: boolean
+  isBanned: boolean
   createdAt: string
   _count: { listings: number; ordersAsBuyer: number; ordersAsSeller: number }
 }
@@ -37,6 +39,7 @@ const tierBadge: Record<string, string> = {
 
 export default function AdminUsersPage() {
   const { privyUser, dbUser } = useUser()
+  const router = useRouter()
   const [users, setUsers] = useState<AdminUser[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -148,6 +151,9 @@ export default function AdminUsersPage() {
                         {u.isVerified && (
                           <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-lime-400/10 text-lime-400 border-lime-400/20">VERIFIED</span>
                         )}
+                        {u.isBanned && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-red-500/10 text-red-400 border-red-500/20">BANNED</span>
+                        )}
                       </div>
                       <div className="text-[10px] text-white/25 font-mono">
                         {u.username && `@${u.username} · `}
@@ -237,6 +243,23 @@ export default function AdminUsersPage() {
 
                         <div className="w-px h-5 bg-white/[0.07]" />
 
+                        {/* Ban / Unban */}
+                        {!u.isSuperAdmin && (
+                          <button
+                            disabled={!!actionId}
+                            onClick={() => patchUser(u.id, { isBanned: !u.isBanned })}
+                            className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-all disabled:opacity-40 ${
+                              u.isBanned
+                                ? 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white'
+                                : 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
+                            }`}
+                          >
+                            {busy ? '...' : u.isBanned ? 'Unban' : 'Ban User'}
+                          </button>
+                        )}
+
+                        <div className="w-px h-5 bg-white/[0.07]" />
+
                         {/* View Profile */}
                         {u.username ? (
                           <Link href={`/profile/${u.username}`} target="_blank">
@@ -247,6 +270,14 @@ export default function AdminUsersPage() {
                         ) : (
                           <span className="text-[10px] text-white/20 font-mono">No profile (no username)</span>
                         )}
+
+                        {/* View Messages */}
+                        <button
+                          onClick={() => router.push(`/admin/messages?userId=${u.id}`)}
+                          className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-white/40 hover:text-white hover:border-white/20 font-mono transition-all"
+                        >
+                          View Messages
+                        </button>
                       </div>
                     </div>
                   )}

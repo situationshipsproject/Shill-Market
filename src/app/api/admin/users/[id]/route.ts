@@ -22,11 +22,16 @@ export async function PATCH(
   }
 
   const body = await req.json()
-  const { isAdmin, tier, isVerified, socialsVerified } = body
+  const { isAdmin, tier, isVerified, socialsVerified, isBanned } = body
 
   // isAdmin changes require super admin
   if (typeof isAdmin === 'boolean' && !caller.isSuperAdmin) {
     return NextResponse.json({ error: 'Only super admins can change admin roles' }, { status: 403 })
+  }
+
+  // only super admins can ban other admins
+  if (typeof isBanned === 'boolean' && target.isAdmin && !caller.isSuperAdmin) {
+    return NextResponse.json({ error: 'Only super admins can ban admins' }, { status: 403 })
   }
 
   const updated = await prisma.user.update({
@@ -36,9 +41,10 @@ export async function PATCH(
       ...(tier && { tier }),
       ...(typeof isVerified === 'boolean' && { isVerified }),
       ...(typeof socialsVerified === 'boolean' && { socialsVerified }),
+      ...(typeof isBanned === 'boolean' && { isBanned }),
     },
     select: {
-      id: true, username: true, displayName: true, isAdmin: true, isSuperAdmin: true, tier: true, isVerified: true, socialsVerified: true,
+      id: true, username: true, displayName: true, isAdmin: true, isSuperAdmin: true, tier: true, isVerified: true, socialsVerified: true, isBanned: true,
     },
   })
 

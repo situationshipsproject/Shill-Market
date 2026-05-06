@@ -2,6 +2,7 @@
 
 import { usePrivy } from '@privy-io/react-auth'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface DbUser {
   id: string
@@ -28,7 +29,8 @@ interface DbUser {
 }
 
 export function useUser() {
-  const { ready, authenticated, user: privyUser, getAccessToken } = usePrivy()
+  const { ready, authenticated, user: privyUser, getAccessToken, logout } = usePrivy()
+  const router = useRouter()
   const [dbUser, setDbUser] = useState<DbUser | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -54,6 +56,12 @@ export function useUser() {
         const res = await fetch('/api/users/me', {
           headers: { 'x-privy-user-id': privyUser!.id },
         })
+
+        if (res.status === 403) {
+          await logout()
+          router.replace('/?banned=true')
+          return
+        }
 
         if (res.ok) {
           const data = await res.json()

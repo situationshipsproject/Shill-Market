@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import Navbar from '@/components/shared/navbar/Navbar'
+import { useUser } from '@/hooks/useUser'
+import { usePrivy } from '@privy-io/react-auth'
 
 interface Package {
   price: number
@@ -60,10 +62,31 @@ type Tab = 'listings' | 'reviews'
 
 export default function ProfilePage() {
   const { username } = useParams()
+  const router = useRouter()
+  const { privyUser, dbUser } = useUser()
+  const { login } = usePrivy()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [avgRating, setAvgRating] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('listings')
+  const [messagingBusy, setMessagingBusy] = useState(false)
+
+  async function startConversation() {
+    if (!privyUser?.id) { login(); return }
+    if (!dbUser) { router.push('/onboarding'); return }
+    if (!profile) return
+    setMessagingBusy(true)
+    const res = await fetch('/api/messages/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-privy-user-id': privyUser.id },
+      body: JSON.stringify({ recipientId: profile.id }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      router.push(`/dashboard/messages?c=${data.conversationId}`)
+    }
+    setMessagingBusy(false)
+  }
 
   useEffect(() => {
     if (!username) return
@@ -165,9 +188,15 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex gap-2 pb-1">
-            <button className="text-sm px-4 py-2 rounded-lg border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all">
-              Message
-            </button>
+            {profile.id !== dbUser?.id && (
+              <button
+                onClick={startConversation}
+                disabled={messagingBusy}
+                className="text-sm px-4 py-2 rounded-lg border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {messagingBusy ? '...' : 'Message'}
+              </button>
+            )}
           </div>
         </div>
 

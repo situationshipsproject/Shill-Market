@@ -11,11 +11,16 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = req.nextUrl
   const search = searchParams.get('search')?.trim() ?? ''
+  const userId = searchParams.get('userId')?.trim() ?? ''
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
   const limit = 20
   const skip = (page - 1) * limit
 
-  const where = search
+  const userFilter = userId
+    ? { OR: [{ participant1Id: userId }, { participant2Id: userId }] }
+    : {}
+
+  const searchFilter = search
     ? {
         OR: [
           { participant1: { username: { contains: search, mode: 'insensitive' as const } } },
@@ -26,6 +31,8 @@ export async function GET(req: NextRequest) {
         ],
       }
     : {}
+
+  const where = { ...userFilter, ...(search ? searchFilter : {}) }
 
   const [total, conversations] = await Promise.all([
     prisma.conversation.count({ where }),

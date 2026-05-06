@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 
 interface Participant {
@@ -33,6 +34,8 @@ function label(p: Participant) {
 
 export default function AdminMessagesPage() {
   const { privyUser } = useUser()
+  const searchParams = useSearchParams()
+  const userIdFilter = searchParams.get('userId') ?? ''
   const [conversations, setConversations] = useState<AdminConversation[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -47,7 +50,11 @@ export default function AdminMessagesPage() {
   const fetchConversations = useCallback(() => {
     if (!privyUser?.id) return
     setLoading(true)
-    const params = new URLSearchParams({ page: String(page), ...(search && { search }) })
+    const params = new URLSearchParams({
+      page: String(page),
+      ...(search && { search }),
+      ...(userIdFilter && { userId: userIdFilter }),
+    })
     fetch(`/api/admin/messages?${params}`, { headers: { 'x-privy-user-id': privyUser.id } })
       .then((r) => r.json())
       .then((d) => {
@@ -56,7 +63,7 @@ export default function AdminMessagesPage() {
         setPages(d.pages ?? 1)
       })
       .finally(() => setLoading(false))
-  }, [privyUser?.id, page, search])
+  }, [privyUser?.id, page, search, userIdFilter])
 
   useEffect(() => { fetchConversations() }, [fetchConversations])
 
@@ -92,6 +99,16 @@ export default function AdminMessagesPage() {
           <h1 className="text-3xl font-bold text-white tracking-tight">
             Messages <span className="text-lg text-white/25 font-normal">{total}</span>
           </h1>
+          {userIdFilter && (
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-[10px] font-mono text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded">
+                Filtered by user
+              </span>
+              <a href="/admin/messages" className="text-[10px] text-white/25 font-mono hover:text-white/50 transition-colors">
+                Clear filter
+              </a>
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
           <input

@@ -43,6 +43,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    if (user.isBanned) {
+      return NextResponse.json({ error: 'Account suspended' }, { status: 403 })
+    }
+
     return NextResponse.json({ user })
   } catch (err) {
     console.error('[GET /api/users/me]', err)
