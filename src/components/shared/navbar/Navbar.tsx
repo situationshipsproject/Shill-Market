@@ -8,7 +8,7 @@ import { useUser } from '@/hooks/useUser'
 const navLinks = [
   { label: 'Browse', href: '/marketplace' },
   { label: 'Become a Seller', href: '/onboarding' },
-  { label: 'Escrow', href: '/dashboard/orders' },
+  { label: 'Orders', href: '/dashboard/orders' },
 ]
 
 export default function Navbar() {

@@ -7,6 +7,7 @@ import { useUser } from '@/hooks/useUser'
 const links = [
   { label: 'Dashboard', href: '/admin', icon: '◈' },
   { label: 'Users', href: '/admin/users', icon: '◉' },
+  { label: 'Messages', href: '/admin/messages', icon: '◎' },
   { label: 'Disputes', href: '/admin/disputes', icon: '⚠' },
   { label: 'Orders', href: '/admin/orders', icon: '⟳' },
 ]

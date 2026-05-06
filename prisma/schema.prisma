@@ -27,18 +27,29 @@ model User {
   bannerUrl   String?
 
   // Trust
-  tier         UserTier @default(ANON)
-  isVerified   Boolean  @default(false)
-  kycCompleted Boolean  @default(false)
-  isAdmin      Boolean  @default(false)
-  isSuperAdmin Boolean  @default(false)
+  tier            UserTier @default(ANON)
+  isVerified      Boolean  @default(false)
+  kycCompleted    Boolean  @default(false)
+  isAdmin         Boolean  @default(false)
+  isSuperAdmin    Boolean  @default(false)
+  socialsVerified Boolean  @default(false)
+
+  // Social links
+  twitterUrl  String?
+  githubUrl   String?
+  tiktokUrl   String?
+  websiteUrl  String?
+  telegramUrl String?
 
   // Relations
-  listings        Listing[]
-  ordersAsBuyer   Order[]   @relation("BuyerOrders")
-  ordersAsSeller  Order[]   @relation("SellerOrders")
-  reviewsGiven    Review[]  @relation("ReviewsGiven")
-  reviewsReceived Review[]  @relation("ReviewsReceived")
+  listings              Listing[]
+  ordersAsBuyer         Order[]        @relation("BuyerOrders")
+  ordersAsSeller        Order[]        @relation("SellerOrders")
+  reviewsGiven          Review[]       @relation("ReviewsGiven")
+  reviewsReceived       Review[]       @relation("ReviewsReceived")
+  conversationsAsP1     Conversation[] @relation("ConvP1")
+  conversationsAsP2     Conversation[] @relation("ConvP2")
+  messagesSent          Message[]
 
   @@map("users")
 }
@@ -186,4 +197,37 @@ model Review {
   reviewee   User   @relation("ReviewsReceived", fields: [revieweeId], references: [id])
 
   @@map("reviews")
+}
+
+// ─── MESSAGING ───────────────────────────────────────────────────────────────
+
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participant1Id String
+  participant2Id String
+  participant1   User      @relation("ConvP1", fields: [participant1Id], references: [id])
+  participant2   User      @relation("ConvP2", fields: [participant2Id], references: [id])
+  messages       Message[]
+  orderId        String?
+
+  @@map("conversations")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  content        String
+  isRead         Boolean @default(false)
+  flagged        Boolean @default(false)
+
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id])
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+
+  @@map("messages")
 }

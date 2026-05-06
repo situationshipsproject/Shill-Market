@@ -37,6 +37,12 @@ interface Profile {
   bannerUrl: string | null
   tier: string
   isVerified: boolean
+  socialsVerified: boolean
+  twitterUrl: string | null
+  githubUrl: string | null
+  tiktokUrl: string | null
+  websiteUrl: string | null
+  telegramUrl: string | null
   createdAt: string
   listings: Listing[]
   reviewsReceived: Review[]
@@ -148,6 +154,11 @@ export default function ProfilePage() {
                     ✓ VERIFIED
                   </span>
                 )}
+                {profile.socialsVerified && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded border bg-lime-400/10 text-lime-400 border-lime-400/20">
+                    ✓ SOCIALS
+                  </span>
+                )}
               </div>
               <div className="text-sm text-white/35 font-mono">@{profile.username}</div>
             </div>
@@ -168,6 +179,29 @@ export default function ProfilePage() {
               <div className="bg-[#111114] border border-white/[0.07] rounded-xl p-5 mb-4">
                 <div className="text-xs text-white/25 font-mono tracking-[2px] uppercase mb-3">About</div>
                 <p className="text-sm text-white/55 leading-relaxed">{profile.bio}</p>
+              </div>
+            )}
+
+            {[profile.twitterUrl, profile.githubUrl, profile.tiktokUrl, profile.websiteUrl, profile.telegramUrl].some(Boolean) && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {[
+                  { url: profile.twitterUrl, label: '𝕏', title: 'Twitter / X' },
+                  { url: profile.githubUrl, label: 'GH', title: 'GitHub' },
+                  { url: profile.tiktokUrl, label: 'TT', title: 'TikTok' },
+                  { url: profile.websiteUrl, label: '🌐', title: 'Website' },
+                  { url: profile.telegramUrl, label: 'TG', title: 'Telegram' },
+                ].filter((s) => s.url).map((s) => (
+                  <a
+                    key={s.title}
+                    href={s.url!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={s.title}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.07] text-xs text-white/50 hover:text-white hover:border-white/20 transition-all font-mono"
+                  >
+                    <span>{s.label}</span>
+                  </a>
+                ))}
               </div>
             )}
 

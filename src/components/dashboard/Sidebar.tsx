@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState, useCallback } from 'react'
 import { useUser } from '@/hooks/useUser'
 
 const links = [
@@ -11,6 +12,7 @@ const links = [
   { label: 'Create Listing', href: '/dashboard/listings/new', icon: '+' },
   { label: 'Orders', href: '/dashboard/orders', icon: '⟳' },
   { label: 'Earnings', href: '/dashboard/earnings', icon: '◎' },
+  { label: 'Messages', href: '/dashboard/messages', icon: '◉' },
   { label: 'Settings', href: '/dashboard/settings', icon: '⚙' },
 ]
 
@@ -23,7 +25,23 @@ const tierColors: Record<string, string> = {
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const { dbUser, loading } = useUser()
+  const { privyUser, dbUser, loading } = useUser()
+  const [unread, setUnread] = useState(0)
+
+  const fetchUnread = useCallback(async () => {
+    if (!privyUser?.id) return
+    const res = await fetch('/api/messages', { headers: { 'x-privy-user-id': privyUser.id } })
+    if (!res.ok) return
+    const data = await res.json()
+    const total = (data.conversations ?? []).reduce((sum: number, c: { unread: number }) => sum + c.unread, 0)
+    setUnread(total)
+  }, [privyUser?.id])
+
+  useEffect(() => {
+    fetchUnread()
+    const id = setInterval(fetchUnread, 15000)
+    return () => clearInterval(id)
+  }, [fetchUnread])
 
   return (
     <aside className="w-56 shrink-0 flex flex-col">
@@ -69,7 +87,8 @@ export default function Sidebar() {
 
       <nav className="flex flex-col gap-0.5">
         {links.map((link) => {
-          const active = pathname === link.href
+          const active = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href))
+          const isMessages = link.href === '/dashboard/messages'
           return (
             <Link
               key={link.href}
@@ -81,7 +100,12 @@ export default function Sidebar() {
               }`}
             >
               <span className="font-mono text-xs w-4 text-center">{link.icon}</span>
-              {link.label}
+              <span className="flex-1">{link.label}</span>
+              {isMessages && unread > 0 && (
+                <span className="w-4 h-4 rounded-full bg-lime-400 text-black text-[10px] font-bold flex items-center justify-center">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
             </Link>
           )
         })}

@@ -58,7 +58,7 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { username, displayName, bio, avatarUrl, bannerUrl } = body
+    const { username, displayName, bio, avatarUrl, bannerUrl, twitterUrl, githubUrl, tiktokUrl, websiteUrl, telegramUrl } = body
 
     const user = await prisma.user.update({
       where: { privyUserId },
@@ -68,6 +68,11 @@ export async function PATCH(req: NextRequest) {
         ...(bio !== undefined && { bio }),
         ...(avatarUrl !== undefined && { avatarUrl }),
         ...(bannerUrl !== undefined && { bannerUrl }),
+        ...(twitterUrl !== undefined && { twitterUrl: twitterUrl || null }),
+        ...(githubUrl !== undefined && { githubUrl: githubUrl || null }),
+        ...(tiktokUrl !== undefined && { tiktokUrl: tiktokUrl || null }),
+        ...(websiteUrl !== undefined && { websiteUrl: websiteUrl || null }),
+        ...(telegramUrl !== undefined && { telegramUrl: telegramUrl || null }),
       },
     })
 

@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/shared/navbar/Navbar'
 import OrderModal from '@/components/order/OrderModal'
 import BescTokenBadge from '@/components/listing/BescTokenBadge'
+import { useUser } from '@/hooks/useUser'
 
 const tierStyles: Record<string, string> = {
   ANON: 'bg-white/5 text-white/40 border-white/10',
@@ -61,10 +62,29 @@ interface Listing {
 
 export default function ListingPage() {
   const { id } = useParams()
+  const router = useRouter()
+  const { privyUser, dbUser } = useUser()
   const [listing, setListing] = useState<Listing | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedPkg, setSelectedPkg] = useState<Package | null>(null)
   const [orderModalOpen, setOrderModalOpen] = useState(false)
+  const [messagingBusy, setMessagingBusy] = useState(false)
+
+  async function startConversation() {
+    if (!privyUser?.id || !listing) return
+    if (!dbUser) { router.push('/onboarding'); return }
+    setMessagingBusy(true)
+    const res = await fetch('/api/messages/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-privy-user-id': privyUser.id },
+      body: JSON.stringify({ recipientId: listing.seller.id }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      router.push(`/dashboard/messages?c=${data.conversationId}`)
+    }
+    setMessagingBusy(false)
+  }
 
   useEffect(() => {
     fetch(`/api/listings/${id}`)
@@ -263,8 +283,12 @@ export default function ListingPage() {
                     >
                       Order Now — ${pkg.price}
                     </button>
-                    <button className="w-full py-2.5 rounded-lg border border-white/10 text-white/50 text-sm hover:text-white hover:border-white/20 transition-all">
-                      Message Seller
+                    <button
+                      onClick={startConversation}
+                      disabled={messagingBusy || listing.seller.id === dbUser?.id}
+                      className="w-full py-2.5 rounded-lg border border-white/10 text-white/50 text-sm hover:text-white hover:border-white/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {messagingBusy ? '...' : 'Message Seller'}
                     </button>
 
                     <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-white/[0.03] border border-white/[0.05]">

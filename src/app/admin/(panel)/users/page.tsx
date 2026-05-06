@@ -14,6 +14,7 @@ interface AdminUser {
   isVerified: boolean
   isAdmin: boolean
   isSuperAdmin: boolean
+  socialsVerified: boolean
   createdAt: string
   _count: { listings: number; ordersAsBuyer: number; ordersAsSeller: number }
 }
@@ -204,6 +205,19 @@ export default function AdminUsersPage() {
                           }`}
                         >
                           {busy ? '...' : u.isVerified ? '✓ Verified — Revoke' : 'Mark Verified'}
+                        </button>
+
+                        {/* Toggle Socials Verified */}
+                        <button
+                          disabled={!!actionId}
+                          onClick={() => patchUser(u.id, { socialsVerified: !u.socialsVerified })}
+                          className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-all disabled:opacity-40 ${
+                            u.socialsVerified
+                              ? 'bg-lime-400/10 text-lime-400 border-lime-400/20 hover:bg-lime-400/20'
+                              : 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          {busy ? '...' : u.socialsVerified ? '✓ Socials — Revoke' : 'Verify Socials'}
                         </button>
 
                         {/* Toggle Admin — super admin only */}

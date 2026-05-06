@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/shared/navbar/Navbar'
 import { useUser } from '@/hooks/useUser'
@@ -52,8 +52,12 @@ const STEPS = [
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const { privyUser } = useUser()
+  const { privyUser, dbUser, ready, authenticated } = useUser()
   const [step, setStep] = useState<Step>(1)
+
+  useEffect(() => {
+    if (ready && authenticated && dbUser?.username) router.replace('/dashboard')
+  }, [ready, authenticated, dbUser, router])
   const [submitting, setSubmitting] = useState(false)
 
   // Step 1 — Identity

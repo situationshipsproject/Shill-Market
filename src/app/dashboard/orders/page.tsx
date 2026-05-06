@@ -34,6 +34,13 @@ const statusColor: Record<string, string> = {
   REFUNDED: 'text-white/25 bg-white/5 border-white/10',
 }
 
+const escrowLabel: Record<string, string> = {
+  HOLDING: 'Payment: Secured',
+  RELEASED: 'Payment: Released',
+  REFUNDED: 'Refunded',
+  DISPUTED: 'Under Review',
+}
+
 const escrowColor: Record<string, string> = {
   HOLDING: 'text-amber-400',
   RELEASED: 'text-lime-400',
@@ -105,7 +112,7 @@ export default function OrdersPage() {
 
           <div className="mb-8">
             <div className="text-xs text-white/25 font-mono tracking-[2px] uppercase mb-2">Dashboard</div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">Orders</h1>
+            <h1 className="text-3xl font-bold text-white tracking-tight">My Orders</h1>
           </div>
 
           <div className="flex gap-1 mb-6 bg-[#111114] border border-white/[0.07] rounded-xl p-1 w-fit">
@@ -117,7 +124,7 @@ export default function OrdersPage() {
                   tab === t ? 'bg-white/[0.07] text-white' : 'text-white/30 hover:text-white/60'
                 }`}
               >
-                {t === 'buying' ? 'Buying' : 'Selling'}
+                {t === 'buying' ? 'As Buyer' : 'As Seller'}
               </button>
             ))}
           </div>
@@ -174,7 +181,7 @@ export default function OrdersPage() {
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs">&#x1F512;</span>
                         <span className={`text-xs font-mono ${escrowColor[order.escrowStatus]}`}>
-                          {order.escrowStatus}
+                          {escrowLabel[order.escrowStatus] ?? order.escrowStatus}
                         </span>
                       </div>
                     </div>
@@ -229,9 +236,9 @@ export default function OrdersPage() {
           <div className="mt-6 bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 flex items-start gap-3">
             <span className="text-lg">&#x1F512;</span>
             <div>
-              <div className="text-xs font-semibold text-white/50 mb-1">How escrow works</div>
+              <div className="text-xs font-semibold text-white/50 mb-1">How payments work</div>
               <div className="text-xs text-white/25 leading-relaxed">
-                Funds are held when an order is placed. The seller delivers, then the buyer confirms and funds release. Disputes are arbitrated by the ShillMarket team within 72 hours.
+                Funds are secured when an order is placed. The seller delivers, you confirm, and payment releases. Disputes are arbitrated by the ShillMarket team within 72 hours.
               </div>
             </div>
           </div>

@@ -12,6 +12,11 @@ export default function SettingsPage() {
   const [bio, setBio] = useState(dbUser?.bio ?? '')
   const [avatarUrl, setAvatarUrl] = useState(dbUser?.avatarUrl ?? '')
   const [bannerUrl, setBannerUrl] = useState(dbUser?.bannerUrl ?? '')
+  const [twitterUrl, setTwitterUrl] = useState((dbUser as { twitterUrl?: string })?.twitterUrl ?? '')
+  const [githubUrl, setGithubUrl] = useState((dbUser as { githubUrl?: string })?.githubUrl ?? '')
+  const [tiktokUrl, setTiktokUrl] = useState((dbUser as { tiktokUrl?: string })?.tiktokUrl ?? '')
+  const [websiteUrl, setWebsiteUrl] = useState((dbUser as { websiteUrl?: string })?.websiteUrl ?? '')
+  const [telegramUrl, setTelegramUrl] = useState((dbUser as { telegramUrl?: string })?.telegramUrl ?? '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -66,7 +71,7 @@ export default function SettingsPage() {
       await fetch('/api/users/me', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'x-privy-user-id': privyUser.id },
-        body: JSON.stringify({ displayName, bio, avatarUrl, bannerUrl }),
+        body: JSON.stringify({ displayName, bio, avatarUrl, bannerUrl, twitterUrl, githubUrl, tiktokUrl, websiteUrl, telegramUrl }),
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
@@ -163,6 +168,39 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Social Links */}
+          <div className="bg-[#111114] border border-white/[0.07] rounded-xl p-6 mb-4">
+            <div className="text-xs text-white/25 font-mono tracking-[2px] uppercase mb-5">Social Links</div>
+            <div className="space-y-3">
+              {[
+                { label: '𝕏 Twitter / X', value: twitterUrl, set: setTwitterUrl, placeholder: 'https://x.com/yourhandle' },
+                { label: 'GitHub', value: githubUrl, set: setGithubUrl, placeholder: 'https://github.com/yourname' },
+                { label: 'TikTok', value: tiktokUrl, set: setTiktokUrl, placeholder: 'https://tiktok.com/@yourhandle' },
+                { label: 'Website', value: websiteUrl, set: setWebsiteUrl, placeholder: 'https://yoursite.com' },
+                { label: 'Telegram', value: telegramUrl, set: setTelegramUrl, placeholder: 'https://t.me/yourhandle' },
+              ].map(({ label, value, set, placeholder }) => (
+                <div key={label}>
+                  <label className="text-xs text-white/40 font-mono block mb-1.5">{label}</label>
+                  <input
+                    value={value}
+                    onChange={(e) => set(e.target.value)}
+                    placeholder={placeholder}
+                    className="w-full bg-[#0a0a0b] border border-white/[0.07] rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/20 outline-none focus:border-lime-400/30 transition-colors"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-6 py-2.5 rounded-lg bg-lime-400 text-black font-semibold text-sm hover:bg-lime-300 transition-all disabled:opacity-40"
+              >
+                {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save Changes'}
+              </button>
             </div>
           </div>
 
