@@ -55,6 +55,41 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const privyUserId = req.headers.get('x-privy-user-id')
+  if (!privyUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  try {
+    const user = await prisma.user.findUnique({ where: { privyUserId } })
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+    const listing = await prisma.listing.findUnique({ where: { id } })
+    if (!listing) return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
+
+    if (listing.sellerId !== user.id && !user.isAdmin) {
+      return NextResponse.json({ error: 'Not your listing' }, { status: 403 })
+    }
+
+    // If listing has active/pending orders, just mark it REMOVED instead of hard delete
+    const activeOrders = await prisma.order.count({
+      where: { listingId: id, status: { in: ['PENDING', 'ACTIVE', 'DELIVERED', 'DISPUTED'] } },
+    })
+
+    if (activeOrders > 0) {
+      const updated = await prisma.listing.update({ where: { id }, data: { status: 'REMOVED' } })
+      return NextResponse.json({ listing: updated, soft: true })
+    }
+
+    await prisma.package.deleteMany({ where: { listingId: id } })
+    await prisma.listing.delete({ where: { id } })
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('[DELETE /api/listings/[id]]', err)
+    return NextResponse.json({ error: 'Failed to delete listing' }, { status: 500 })
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
 

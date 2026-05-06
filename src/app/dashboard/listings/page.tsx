@@ -23,26 +23,43 @@ export default function MyListingsPage() {
   const router = useRouter()
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (ready && !authenticated) router.push('/')
   }, [ready, authenticated, router])
 
-  useEffect(() => {
+  const fetchListings = async () => {
     if (!privyUser?.id) return
-    const fetchListings = async () => {
-      try {
-        const res = await fetch(`/api/listings?privyUserId=${privyUser.id}&own=true`)
-        const data = await res.json()
-        setListings(data.listings ?? [])
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
+    try {
+      const res = await fetch(`/api/listings?privyUserId=${privyUser.id}&own=true`)
+      const data = await res.json()
+      setListings(data.listings ?? [])
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-    fetchListings()
-  }, [privyUser])
+  }
+
+  useEffect(() => { fetchListings() }, [privyUser])
+
+  const handleDelete = async (id: string, title: string) => {
+    if (!privyUser?.id) return
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return
+    setDeletingId(id)
+    try {
+      await fetch(`/api/listings/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-privy-user-id': privyUser.id },
+      })
+      await fetchListings()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const categoryLabel = (cat: string) =>
     cat.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
@@ -141,6 +158,13 @@ export default function MyListingsPage() {
                           Edit
                         </button>
                       </Link>
+                      <button
+                        onClick={() => handleDelete(listing.id, listing.title)}
+                        disabled={deletingId === listing.id}
+                        className="text-xs px-3 py-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/5 transition-all disabled:opacity-40"
+                      >
+                        {deletingId === listing.id ? '...' : 'Delete'}
+                      </button>
                     </div>
                   </div>
                 )

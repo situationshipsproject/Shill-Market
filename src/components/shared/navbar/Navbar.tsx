@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import AuthButton from './AuthButton'
+import { useUser } from '@/hooks/useUser'
 
 const navLinks = [
   { label: 'Browse', href: '/marketplace' },
@@ -12,6 +13,7 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname()
+  const { dbUser } = useUser()
 
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-8 py-4 border-b border-white/[0.07] bg-[#0a0a0b]/95 backdrop-blur">
@@ -34,6 +36,18 @@ export default function Navbar() {
             {link.label}
           </Link>
         ))}
+        {dbUser?.isAdmin && (
+          <Link
+            href="/admin"
+            className={`transition-colors font-medium ${
+              pathname.startsWith('/admin')
+                ? 'text-violet-400'
+                : 'text-violet-400/50 hover:text-violet-400'
+            }`}
+          >
+            Admin
+          </Link>
+        )}
       </div>
 
       <AuthButton />

@@ -80,6 +80,19 @@ export default function Sidebar() {
             </Link>
           )
         })}
+        {dbUser?.isAdmin && (
+          <Link
+            href="/admin"
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all mt-2 border-t border-white/[0.05] pt-3 ${
+              pathname.startsWith('/admin')
+                ? 'bg-violet-500/10 text-violet-400 font-medium'
+                : 'text-violet-400/40 hover:text-violet-400 hover:bg-violet-500/5'
+            }`}
+          >
+            <span className="font-mono text-xs w-4 text-center">◈</span>
+            Admin Panel
+          </Link>
+        )}
       </nav>
 
     </aside>
