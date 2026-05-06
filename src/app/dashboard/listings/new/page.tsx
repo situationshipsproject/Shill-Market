@@ -19,7 +19,7 @@ const EMPTY_PACKAGE = {
 
 export default function NewListingPage() {
   const router = useRouter()
-  const { getAccessToken } = useUser()
+  const { privyUser } = useUser()
 
   const [form, setForm] = useState({ title: '', description: '', category: '', tags: '' })
   const [packages, setPackages] = useState([
@@ -35,15 +35,15 @@ export default function NewListingPage() {
   }
 
   const handleSubmit = async () => {
+    if (!privyUser?.id) { setError('Not authenticated'); return }
     setSubmitting(true)
     setError('')
     try {
-      const token = await getAccessToken()
       const res = await fetch('/api/listings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'x-privy-user-id': privyUser.id,
         },
         body: JSON.stringify({
           title: form.title,

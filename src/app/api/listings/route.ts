@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { verifyPrivyToken } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -78,7 +77,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const privyUserId = await verifyPrivyToken(req)
+  const privyUserId = req.headers.get('x-privy-user-id')
   if (!privyUserId) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }

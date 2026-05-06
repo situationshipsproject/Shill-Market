@@ -52,7 +52,7 @@ const STEPS = [
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const { privyUser, getAccessToken } = useUser()
+  const { privyUser } = useUser()
   const [step, setStep] = useState<Step>(1)
   const [submitting, setSubmitting] = useState(false)
 
@@ -100,15 +100,16 @@ export default function OnboardingPage() {
   }
 
   const handleFinish = async () => {
+    if (!privyUser?.id) return
     setSubmitting(true)
+    const privyId = privyUser.id
+    const authHeader = { 'x-privy-user-id': privyId }
     try {
-      const token = await getAccessToken()
-      const authHeader = { Authorization: `Bearer ${token}` }
-
       await fetch('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeader },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          privyUserId: privyId,
           walletAddress: privyUser?.wallet?.address,
           email: privyUser?.email?.address,
         }),
