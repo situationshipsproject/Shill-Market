@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
 
 interface AdminUser {
@@ -26,6 +27,13 @@ const tierColors: Record<string, string> = {
   INSTITUTION: 'text-sky-400',
 }
 
+const tierBadge: Record<string, string> = {
+  ANON: 'bg-white/5 text-white/40 border-white/10',
+  VERIFIED: 'bg-lime-400/10 text-lime-400 border-lime-400/20',
+  ELITE: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  INSTITUTION: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+}
+
 export default function AdminUsersPage() {
   const { privyUser, dbUser } = useUser()
   const [users, setUsers] = useState<AdminUser[]>([])
@@ -36,6 +44,7 @@ export default function AdminUsersPage() {
   const [searchInput, setSearchInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const fetchUsers = useCallback(() => {
     if (!privyUser?.id) return
@@ -94,9 +103,10 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="bg-[#111114] border border-white/[0.07] rounded-xl overflow-hidden">
-        <div className="grid grid-cols-[1fr_120px_80px_160px] gap-0 border-b border-white/[0.07] px-5 py-3">
-          {['User', 'Tier', 'Stats', 'Actions'].map((h) => (
-            <div key={h} className="text-[10px] text-white/25 font-mono tracking-[1px] uppercase">{h}</div>
+        {/* Header */}
+        <div className="grid grid-cols-[1fr_100px_90px_16px] gap-0 border-b border-white/[0.07] px-5 py-3">
+          {['User', 'Tier', 'Stats', ''].map((h, i) => (
+            <div key={i} className="text-[10px] text-white/25 font-mono tracking-[1px] uppercase">{h}</div>
           ))}
         </div>
 
@@ -112,88 +122,123 @@ export default function AdminUsersPage() {
           <div className="px-5 py-12 text-center text-sm text-white/25 font-mono">No users found</div>
         ) : (
           <div className="flex flex-col">
-            {users.map((u) => (
-              <div
-                key={u.id}
-                className="grid grid-cols-[1fr_120px_80px_160px] gap-0 px-5 py-4 border-b border-white/[0.04] last:border-0 items-center hover:bg-white/[0.015] transition-colors"
-              >
-                {/* User info */}
-                <div>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-sm font-medium text-white">
-                      {u.displayName ?? u.username ?? 'Anonymous'}
-                    </span>
-                    {u.isSuperAdmin && (
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-violet-500/10 text-violet-400 border-violet-500/20">
-                        SUPER ADMIN
+            {users.map((u) => {
+              const isExpanded = expandedId === u.id
+              const busy = actionId === u.id
+              return (
+                <div key={u.id} className="border-b border-white/[0.04] last:border-0">
+                  {/* Row */}
+                  <div
+                    className="grid grid-cols-[1fr_100px_90px_16px] gap-0 px-5 py-4 items-center cursor-pointer hover:bg-white/[0.02] transition-colors"
+                    onClick={() => setExpandedId(isExpanded ? null : u.id)}
+                  >
+                    {/* User info */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <span className="text-sm font-medium text-white">
+                          {u.displayName ?? u.username ?? 'Anonymous'}
+                        </span>
+                        {u.isSuperAdmin && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-violet-500/10 text-violet-400 border-violet-500/20">SUPER ADMIN</span>
+                        )}
+                        {u.isAdmin && !u.isSuperAdmin && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-orange-500/10 text-orange-400 border-orange-500/20">ADMIN</span>
+                        )}
+                        {u.isVerified && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-lime-400/10 text-lime-400 border-lime-400/20">VERIFIED</span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-white/25 font-mono">
+                        {u.username && `@${u.username} · `}
+                        {u.email ?? (u.walletAddress ? `${u.walletAddress.slice(0, 12)}...` : u.id.slice(0, 12))}
+                      </div>
+                    </div>
+
+                    {/* Tier */}
+                    <div>
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${tierBadge[u.tier] ?? tierBadge.ANON}`}>
+                        {u.tier}
                       </span>
-                    )}
-                    {u.isAdmin && !u.isSuperAdmin && (
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-orange-500/10 text-orange-400 border-orange-500/20">
-                        ADMIN
-                      </span>
-                    )}
-                    {u.isVerified && (
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-lime-400/10 text-lime-400 border-lime-400/20">
-                        VERIFIED
-                      </span>
-                    )}
+                    </div>
+
+                    {/* Stats */}
+                    <div className="text-[10px] text-white/25 font-mono space-y-0.5">
+                      <div>{u._count.listings}L · {u._count.ordersAsSeller}S · {u._count.ordersAsBuyer}B</div>
+                      <div>{new Date(u.createdAt).toLocaleDateString()}</div>
+                    </div>
+
+                    {/* Chevron */}
+                    <div className={`text-white/20 text-xs font-mono transition-transform ${isExpanded ? 'rotate-90' : ''}`}>›</div>
                   </div>
-                  <div className="text-[10px] text-white/25 font-mono">
-                    {u.username && `@${u.username} · `}
-                    {u.email ?? (u.walletAddress ? `${u.walletAddress.slice(0, 10)}...` : u.id.slice(0, 10))}
-                  </div>
-                </div>
 
-                {/* Tier */}
-                <div>
-                  {isSuperAdmin ? (
-                    <select
-                      value={u.tier}
-                      disabled={u.isSuperAdmin || !!actionId}
-                      onChange={(e) => patchUser(u.id, { tier: e.target.value })}
-                      className="bg-[#0a0a0b] border border-white/[0.07] rounded px-2 py-1 text-xs font-mono text-white/70 outline-none disabled:opacity-40"
-                    >
-                      {TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  ) : (
-                    <span className={`text-xs font-mono ${tierColors[u.tier] ?? 'text-white/40'}`}>{u.tier}</span>
+                  {/* Expanded actions panel */}
+                  {isExpanded && (
+                    <div className="px-5 pb-4 bg-white/[0.015] border-t border-white/[0.04]">
+                      <div className="pt-4 flex items-center gap-3 flex-wrap">
+
+                        {/* Change Tier */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-white/30 font-mono">Tier:</span>
+                          <select
+                            value={u.tier}
+                            disabled={u.isSuperAdmin || !!actionId}
+                            onChange={(e) => patchUser(u.id, { tier: e.target.value })}
+                            className="bg-[#0a0a0b] border border-white/[0.1] rounded px-2 py-1.5 text-xs font-mono text-white outline-none disabled:opacity-40 cursor-pointer"
+                          >
+                            {TIERS.map((t) => (
+                              <option key={t} value={t}>{t}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="w-px h-5 bg-white/[0.07]" />
+
+                        {/* Toggle Verified */}
+                        <button
+                          disabled={!!actionId}
+                          onClick={() => patchUser(u.id, { isVerified: !u.isVerified })}
+                          className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-all disabled:opacity-40 ${
+                            u.isVerified
+                              ? 'bg-lime-400/10 text-lime-400 border-lime-400/20 hover:bg-lime-400/20'
+                              : 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          {busy ? '...' : u.isVerified ? '✓ Verified — Revoke' : 'Mark Verified'}
+                        </button>
+
+                        {/* Toggle Admin — super admin only */}
+                        {isSuperAdmin && !u.isSuperAdmin && (
+                          <button
+                            disabled={!!actionId}
+                            onClick={() => patchUser(u.id, { isAdmin: !u.isAdmin })}
+                            className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-all disabled:opacity-40 ${
+                              u.isAdmin
+                                ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20'
+                                : 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white'
+                            }`}
+                          >
+                            {busy ? '...' : u.isAdmin ? 'Revoke Admin' : 'Make Admin'}
+                          </button>
+                        )}
+
+                        <div className="w-px h-5 bg-white/[0.07]" />
+
+                        {/* View Profile */}
+                        {u.username ? (
+                          <Link href={`/profile/${u.username}`} target="_blank">
+                            <button className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-white/40 hover:text-white hover:border-white/20 font-mono transition-all">
+                              View Profile ↗
+                            </button>
+                          </Link>
+                        ) : (
+                          <span className="text-[10px] text-white/20 font-mono">No profile (no username)</span>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-
-                {/* Stats */}
-                <div className="text-xs text-white/30 font-mono space-y-0.5">
-                  <div>{u._count.listings} listings</div>
-                  <div>{u._count.ordersAsSeller} orders</div>
-                </div>
-
-                {/* Actions — only super admin can assign admin */}
-                <div className="flex items-center gap-2">
-                  {isSuperAdmin && !u.isSuperAdmin && (
-                    <button
-                      disabled={!!actionId}
-                      onClick={() => patchUser(u.id, { isAdmin: !u.isAdmin })}
-                      className={`text-[10px] px-3 py-1.5 rounded-lg border font-mono transition-all disabled:opacity-40 ${
-                        u.isAdmin
-                          ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20'
-                          : 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white'
-                      }`}
-                    >
-                      {actionId === u.id ? '...' : u.isAdmin ? 'Revoke Admin' : 'Make Admin'}
-                    </button>
-                  )}
-                  {isSuperAdmin && (
-                    <button
-                      disabled={!!actionId}
-                      onClick={() => patchUser(u.id, { isVerified: !u.isVerified })}
-                      className="text-[10px] px-3 py-1.5 rounded-lg border font-mono bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white transition-all disabled:opacity-40"
-                    >
-                      {u.isVerified ? 'Unverify' : 'Verify'}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

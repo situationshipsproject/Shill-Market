@@ -15,6 +15,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
             displayName: true,
             bio: true,
             avatarUrl: true,
+            bannerUrl: true,
             tier: true,
             isVerified: true,
             createdAt: true,

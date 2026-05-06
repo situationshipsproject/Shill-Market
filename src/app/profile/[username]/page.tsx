@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import Navbar from '@/components/shared/navbar/Navbar'
 
 interface Package {
@@ -33,6 +34,7 @@ interface Profile {
   displayName: string | null
   bio: string | null
   avatarUrl: string | null
+  bannerUrl: string | null
   tier: string
   isVerified: boolean
   createdAt: string
@@ -116,14 +118,22 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[#0a0a0b] text-[#e8e6e0]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       <Navbar />
 
-      <div className="h-32 bg-gradient-to-r from-[#111114] via-[#18181c] to-[#111114] border-b border-white/[0.05]" />
+      <div className="relative h-36 bg-gradient-to-r from-[#111114] via-[#18181c] to-[#111114] border-b border-white/[0.05] overflow-hidden">
+        {profile.bannerUrl && (
+          <Image src={profile.bannerUrl} alt="Banner" fill className="object-cover" />
+        )}
+      </div>
 
       <div className="max-w-5xl mx-auto px-8 pb-24">
 
         <div className="flex items-end justify-between -mt-10 mb-8">
           <div className="flex items-end gap-5">
-            <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold border-4 border-[#0a0a0b] bg-lime-400 text-black">
-              {initials}
+            <div className="w-20 h-20 rounded-2xl border-4 border-[#0a0a0b] bg-lime-400 overflow-hidden relative flex items-center justify-center">
+              {profile.avatarUrl ? (
+                <Image src={profile.avatarUrl} alt={profile.displayName ?? profile.username ?? 'Avatar'} fill className="object-cover" />
+              ) : (
+                <span className="text-2xl font-bold text-black">{initials}</span>
+              )}
             </div>
             <div className="pb-1">
               <div className="flex items-center gap-2.5 mb-1">
@@ -222,8 +232,12 @@ export default function ProfilePage() {
                     <div key={review.id} className="bg-[#111114] border border-white/[0.07] rounded-xl p-5">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-violet-500 flex items-center justify-center text-xs font-bold text-white">
-                            {(review.reviewer.displayName ?? review.reviewer.username ?? '?')[0].toUpperCase()}
+                          <div className="w-7 h-7 rounded-full bg-violet-500 overflow-hidden relative flex items-center justify-center text-xs font-bold text-white">
+                            {review.reviewer.avatarUrl ? (
+                              <Image src={review.reviewer.avatarUrl} alt="" fill className="object-cover" />
+                            ) : (
+                              (review.reviewer.displayName ?? review.reviewer.username ?? '?')[0].toUpperCase()
+                            )}
                           </div>
                           <div>
                             <div className="text-sm font-medium text-white/70">

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 
@@ -36,8 +37,12 @@ export default function Sidebar() {
           </div>
         ) : dbUser ? (
           <>
-            <div className="w-10 h-10 rounded-full bg-lime-400 flex items-center justify-center text-black font-bold text-sm mb-3">
-              {(dbUser.displayName ?? dbUser.email ?? dbUser.walletAddress ?? '?')[0].toUpperCase()}
+            <div className="w-10 h-10 rounded-full bg-lime-400 overflow-hidden relative flex items-center justify-center text-black font-bold text-sm mb-3">
+              {dbUser.avatarUrl ? (
+                <Image src={dbUser.avatarUrl} alt="" fill className="object-cover" />
+              ) : (
+                (dbUser.displayName ?? dbUser.email ?? dbUser.walletAddress ?? '?')[0].toUpperCase()
+              )}
             </div>
             <div className="text-sm font-semibold text-white truncate">
               {dbUser.displayName ?? dbUser.username ?? 'Anon'}

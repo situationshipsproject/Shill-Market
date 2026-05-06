@@ -10,9 +10,9 @@ interface DbUser {
   email?: string
   username?: string
   displayName?: string
-  bio?: string
-  avatarUrl?: string
-  bannerUrl?: string
+  bio?: string | null
+  avatarUrl?: string | null
+  bannerUrl?: string | null
   tier: 'ANON' | 'VERIFIED' | 'ELITE' | 'INSTITUTION'
   isVerified: boolean
   kycCompleted: boolean

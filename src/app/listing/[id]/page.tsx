@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import Navbar from '@/components/shared/navbar/Navbar'
+import OrderModal from '@/components/order/OrderModal'
 
 const tierStyles: Record<string, string> = {
   ANON: 'bg-white/5 text-white/40 border-white/10',
@@ -29,6 +31,7 @@ interface Seller {
   displayName: string | null
   bio: string | null
   avatarUrl: string | null
+  bannerUrl: string | null
   tier: string
   isVerified: boolean
   createdAt: string
@@ -59,6 +62,7 @@ export default function ListingPage() {
   const [listing, setListing] = useState<Listing | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedPkg, setSelectedPkg] = useState<Package | null>(null)
+  const [orderModalOpen, setOrderModalOpen] = useState(false)
 
   useEffect(() => {
     fetch(`/api/listings/${id}`)
@@ -89,6 +93,7 @@ export default function ListingPage() {
   }
 
   const pkg = selectedPkg ?? listing.packages[0]
+  const listingIdStr = Array.isArray(id) ? id[0] : (id ?? '')
   const reviews = listing.orders.map((o) => o.review).filter(Boolean) as Review[]
   const sellerInitials = (listing.seller.displayName ?? listing.seller.username ?? '?').slice(0, 2).toUpperCase()
   const memberYear = new Date(listing.seller.createdAt).getFullYear()
@@ -96,6 +101,15 @@ export default function ListingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0b] text-[#e8e6e0]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       <Navbar />
+      {pkg && (
+        <OrderModal
+          open={orderModalOpen}
+          onClose={() => setOrderModalOpen(false)}
+          listingId={listingIdStr}
+          listingTitle={listing.title}
+          pkg={pkg}
+        />
+      )}
 
       <div className="max-w-6xl mx-auto px-8 pt-10 pb-24">
 
@@ -117,8 +131,10 @@ export default function ListingPage() {
             </h1>
 
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 rounded-full bg-lime-400/20 flex items-center justify-center text-xs font-bold text-lime-400">
-                {sellerInitials}
+              <div className="w-8 h-8 rounded-full bg-lime-400/20 overflow-hidden relative flex items-center justify-center text-xs font-bold text-lime-400">
+                {listing.seller.avatarUrl ? (
+                  <Image src={listing.seller.avatarUrl} alt="" fill className="object-cover" />
+                ) : sellerInitials}
               </div>
               <span className="text-sm text-white/70 font-medium">
                 {listing.seller.displayName ?? listing.seller.username}
@@ -233,7 +249,10 @@ export default function ListingPage() {
                       ))}
                     </div>
 
-                    <button className="w-full py-3 rounded-lg bg-lime-400 text-black font-bold text-sm hover:bg-lime-300 transition-all mb-2">
+                    <button
+                      onClick={() => setOrderModalOpen(true)}
+                      className="w-full py-3 rounded-lg bg-lime-400 text-black font-bold text-sm hover:bg-lime-300 transition-all mb-2"
+                    >
                       Order Now — ${pkg.price}
                     </button>
                     <button className="w-full py-2.5 rounded-lg border border-white/10 text-white/50 text-sm hover:text-white hover:border-white/20 transition-all">
@@ -253,8 +272,10 @@ export default function ListingPage() {
               <div className="bg-[#111114] border border-white/[0.07] rounded-xl p-5">
                 <div className="text-xs text-white/25 font-mono tracking-[2px] uppercase mb-4">About the seller</div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-lime-400/20 flex items-center justify-center text-sm font-bold text-lime-400">
-                    {sellerInitials}
+                  <div className="w-10 h-10 rounded-full bg-lime-400/20 overflow-hidden relative flex items-center justify-center text-sm font-bold text-lime-400">
+                    {listing.seller.avatarUrl ? (
+                      <Image src={listing.seller.avatarUrl} alt="" fill className="object-cover" />
+                    ) : sellerInitials}
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-white">
