@@ -59,6 +59,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
     if (ready && !authenticated) router.push('/')
@@ -147,11 +148,14 @@ export default function OrdersPage() {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {orders.map((order) => (
+              {orders.map((order) => {
+                const isExpanded = expandedId === order.id
+                return (
                 <div
                   key={order.id}
-                  className="bg-[#111114] border border-white/[0.07] rounded-xl p-5 hover:border-white/15 transition-all"
+                  className="bg-[#111114] border border-white/[0.07] rounded-xl overflow-hidden hover:border-white/15 transition-all"
                 >
+                  <div className="p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 min-w-0 pr-4">
                       <div className="text-sm font-semibold text-white mb-1 truncate">
@@ -223,13 +227,77 @@ export default function OrdersPage() {
                           Dispute
                         </button>
                       )}
-                      <button className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all">
-                        Details
+                      <button
+                        onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                        className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-all ${
+                          isExpanded
+                            ? 'border-lime-400/30 text-lime-400 bg-lime-400/5'
+                            : 'border-white/10 text-white/40 hover:text-white hover:border-white/20'
+                        }`}
+                      >
+                        {isExpanded ? 'Hide' : 'Details'}
                       </button>
                     </div>
                   </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="px-5 pb-5 border-t border-white/[0.05] bg-white/[0.015]">
+                      <div className="pt-4 grid grid-cols-2 gap-x-8 gap-y-3 text-xs font-mono">
+                        <div>
+                          <div className="text-white/25 mb-1">Order ID</div>
+                          <div className="text-white/60 break-all">{order.id}</div>
+                        </div>
+                        <div>
+                          <div className="text-white/25 mb-1">Category</div>
+                          <div className="text-white/60">{order.listing.category.replace(/_/g, ' ')}</div>
+                        </div>
+                        <div>
+                          <div className="text-white/25 mb-1">Package</div>
+                          <div className="text-white/60">{order.package.name} · {order.package.deliveryDays}d delivery</div>
+                        </div>
+                        <div>
+                          <div className="text-white/25 mb-1">Amount</div>
+                          <div className="text-white/60">${order.amount} {order.currency}</div>
+                        </div>
+                        <div>
+                          <div className="text-white/25 mb-1">{tab === 'buying' ? 'Seller' : 'Buyer'}</div>
+                          <div className="text-white/60">
+                            {displayName(tab === 'buying' ? order.seller : order.buyer)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-white/25 mb-1">Escrow</div>
+                          <div className={escrowColor[order.escrowStatus]}>{escrowLabel[order.escrowStatus] ?? order.escrowStatus}</div>
+                        </div>
+                        <div>
+                          <div className="text-white/25 mb-1">Placed</div>
+                          <div className="text-white/60">{new Date(order.createdAt).toLocaleString()}</div>
+                        </div>
+                        {order.deliveredAt && (
+                          <div>
+                            <div className="text-white/25 mb-1">Delivered</div>
+                            <div className="text-white/60">{new Date(order.deliveredAt).toLocaleString()}</div>
+                          </div>
+                        )}
+                        {order.completedAt && (
+                          <div>
+                            <div className="text-white/25 mb-1">Completed</div>
+                            <div className="text-lime-400">{new Date(order.completedAt).toLocaleString()}</div>
+                          </div>
+                        )}
+                        {order.disputedAt && (
+                          <div>
+                            <div className="text-white/25 mb-1">Disputed</div>
+                            <div className="text-red-400">{new Date(order.disputedAt).toLocaleString()}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
 

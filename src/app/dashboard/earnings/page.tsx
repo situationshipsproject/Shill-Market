@@ -105,7 +105,7 @@ export default function EarningsPage() {
                       <Tooltip
                         contentStyle={{ background: '#111114', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, fontSize: 12 }}
                         labelStyle={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace', fontSize: 10 }}
-                        formatter={(v: number) => [`$${v.toFixed(2)}`, 'Earned']}
+                        formatter={(v) => [`$${Number(v ?? 0).toFixed(2)}`, 'Earned']}
                         cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       />
                       <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
