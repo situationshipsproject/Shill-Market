@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 
@@ -32,7 +32,7 @@ function label(p: Participant) {
   return p.displayName ?? p.username ?? p.walletAddress?.slice(0, 10) ?? p.id.slice(0, 10)
 }
 
-export default function AdminMessagesPage() {
+function AdminMessagesPageInner() {
   const { privyUser } = useUser()
   const searchParams = useSearchParams()
   const userIdFilter = searchParams.get('userId') ?? ''
@@ -265,5 +265,13 @@ export default function AdminMessagesPage() {
 
       </div>
     </>
+  )
+}
+
+export default function AdminMessagesPage() {
+  return (
+    <Suspense>
+      <AdminMessagesPageInner />
+    </Suspense>
   )
 }

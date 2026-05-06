@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, Suspense } from 'react'
 import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/shared/navbar/Navbar'
@@ -42,7 +42,7 @@ function Avatar({ user, size = 8 }: { user: Participant; size?: number }) {
   )
 }
 
-export default function MessagesPage() {
+function MessagesPageInner() {
   const { privyUser, dbUser, ready, authenticated } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -297,5 +297,13 @@ export default function MessagesPage() {
         </main>
       </div>
     </div>
+  )
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense>
+      <MessagesPageInner />
+    </Suspense>
   )
 }
