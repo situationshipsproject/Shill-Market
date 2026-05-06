@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import Navbar from '@/components/shared/navbar/Navbar'
 import OrderModal from '@/components/order/OrderModal'
+import BescTokenBadge from '@/components/listing/BescTokenBadge'
 
 const tierStyles: Record<string, string> = {
   ANON: 'bg-white/5 text-white/40 border-white/10',
@@ -52,6 +53,7 @@ interface Listing {
   description: string
   category: string
   tags: string[]
+  tokenContract: string | null
   seller: Seller
   packages: Package[]
   orders: { review: Review | null }[]
@@ -158,6 +160,12 @@ export default function ListingPage() {
                     #{tag}
                   </span>
                 ))}
+              </div>
+            )}
+
+            {listing.tokenContract && (
+              <div className="mb-6">
+                <BescTokenBadge contractAddress={listing.tokenContract} />
               </div>
             )}
 

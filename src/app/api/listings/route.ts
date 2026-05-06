@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { title, description, category, tags, packages } = body
+    const { title, description, category, tags, packages, tokenContract } = body
 
     if (!title || !description || !category || !packages?.length) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
         description,
         category,
         tags: tags ?? [],
+        tokenContract: tokenContract ?? null,
         sellerId: user.id,
         packages: {
           create: packages.map((pkg: {

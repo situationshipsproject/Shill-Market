@@ -60,7 +60,8 @@ model Listing {
   title       String
   description String
   category    Category
-  tags        String[]
+  tags          String[]
+  tokenContract String?
 
   status     ListingStatus @default(ACTIVE)
   isFeatured Boolean       @default(false)
@@ -84,6 +85,7 @@ enum Category {
   RESEARCH_ALPHA
   BROKERAGE
   COMPLIANCE
+  BESC_ECOSYSTEM
 }
 
 enum ListingStatus {

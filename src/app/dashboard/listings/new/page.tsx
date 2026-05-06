@@ -21,7 +21,7 @@ export default function NewListingPage() {
   const router = useRouter()
   const { privyUser } = useUser()
 
-  const [form, setForm] = useState({ title: '', description: '', category: '', tags: '' })
+  const [form, setForm] = useState({ title: '', description: '', category: '', tags: '', tokenContract: '' })
   const [packages, setPackages] = useState([
     { ...EMPTY_PACKAGE, name: 'Basic' },
     { ...EMPTY_PACKAGE, name: 'Standard' },
@@ -50,6 +50,7 @@ export default function NewListingPage() {
           description: form.description,
           category: form.category.toUpperCase().replace(/-/g, '_'),
           tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
+          tokenContract: form.tokenContract.trim() || null,
           packages: packages.map((pkg) => ({
             name: pkg.name,
             description: pkg.description,
@@ -134,6 +135,20 @@ export default function NewListingPage() {
                     placeholder="solana, audit, rust, defi"
                     className="w-full bg-[#0a0a0b] border border-white/[0.07] rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/20 outline-none focus:border-lime-400/30 transition-colors"
                   />
+                </div>
+                <div>
+                  <label className="text-xs text-white/40 font-mono block mb-1.5">
+                    Token Contract <span className="text-white/20">(optional — BESC HyperChain)</span>
+                  </label>
+                  <input
+                    value={form.tokenContract}
+                    onChange={(e) => setForm({ ...form, tokenContract: e.target.value })}
+                    placeholder="0x..."
+                    className="w-full bg-[#0a0a0b] border border-white/[0.07] rounded-lg px-3 py-2.5 text-sm text-white font-mono placeholder-white/20 outline-none focus:border-lime-400/30 transition-colors"
+                  />
+                  <p className="text-[10px] text-white/20 font-mono mt-1">
+                    If set, shows live token price and a Verified on BESC badge on your listing.
+                  </p>
                 </div>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Navbar from '@/components/shared/navbar/Navbar'
 import { prisma } from '@/lib/prisma'
+import { getFUSDPrice } from '@/lib/besc'
 
 const categories = [
   { icon: '⚙️', name: 'Development', count: null, slug: 'development' },
@@ -12,6 +13,7 @@ const categories = [
   { icon: '🔍', name: 'Research & Alpha', count: null, slug: 'research-alpha' },
   { icon: '⚖️', name: 'Brokerage', count: null, slug: 'brokerage' },
   { icon: '📋', name: 'Compliance', count: null, slug: 'compliance' },
+  { icon: '🔗', name: 'BESC Ecosystem', count: null, slug: 'besc-ecosystem' },
 ]
 
 const tierStyles: Record<string, string> = {
@@ -51,7 +53,7 @@ async function getStats() {
 }
 
 export default async function HomePage() {
-  const [featuredListings, stats] = await Promise.all([getFeaturedListings(), getStats()])
+  const [featuredListings, stats, fusdPrice] = await Promise.all([getFeaturedListings(), getStats(), getFUSDPrice()])
 
   return (
     <main className="min-h-screen bg-[#0a0a0b] text-[#e8e6e0]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -176,6 +178,13 @@ export default async function HomePage() {
       {/* FOOTER */}
       <footer className="border-t border-white/[0.06] px-8 py-8 max-w-4xl mx-auto flex justify-between items-center text-xs text-white/20 font-mono">
         <span>ShillMarket © 2025</span>
+        <div className="flex items-center gap-2 text-lime-400/60">
+          <span>🔗</span>
+          <span className="font-mono">$FUSD</span>
+          <span className="text-lime-400 font-semibold">${fusdPrice.toFixed(2)}</span>
+          <span className="text-white/20">·</span>
+          <span className="text-white/25">Powered by BESC HyperChain</span>
+        </div>
         <div className="flex gap-6">
           <span>Terms</span>
           <span>Privacy</span>

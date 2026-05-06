@@ -6,6 +6,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import { useUser } from '@/hooks/useUser'
 
 const PLATFORM_WALLET = '0x0000000000000000000000000000000000000000'
+const FUSD_CONTRACT = '0xcfd6AaA9373CEebcC03D3cd9d87d4033da67B8e9'
 
 interface Package {
   id: string
@@ -26,6 +27,7 @@ interface Props {
 }
 
 type Step = 'form' | 'success'
+type PaymentMethod = 'USDC' | 'BESC'
 
 export default function OrderModal({ open, onClose, listingId, listingTitle, pkg }: Props) {
   const { login, authenticated } = usePrivy()
@@ -35,6 +37,7 @@ export default function OrderModal({ open, onClose, listingId, listingTitle, pkg
   const [error, setError] = useState('')
   const [step, setStep] = useState<Step>('form')
   const [orderId, setOrderId] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('USDC')
 
   useEffect(() => {
     if (!open) {
@@ -42,6 +45,7 @@ export default function OrderModal({ open, onClose, listingId, listingTitle, pkg
       setError('')
       setStep('form')
       setOrderId('')
+      setPaymentMethod('USDC')
     }
   }, [open])
 
@@ -150,33 +154,56 @@ export default function OrderModal({ open, onClose, listingId, listingTitle, pkg
             {/* Payment method */}
             <div>
               <div className="text-xs text-white/40 font-mono mb-2">Payment Method</div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center gap-2.5 px-3 py-3 rounded-xl border border-lime-400/30 bg-lime-400/5">
-                  <div className="w-4 h-4 rounded-full border-2 border-lime-400 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-lime-400" />
-                  </div>
-                  <span className="text-sm font-medium text-white">Crypto (USDC)</span>
-                </div>
-                <div className="flex items-center gap-2.5 px-3 py-3 rounded-xl border border-white/[0.07] opacity-40 cursor-not-allowed">
-                  <div className="w-4 h-4 rounded-full border-2 border-white/20" />
-                  <span className="text-sm text-white/40">Credit Card</span>
-                  <span className="text-[9px] font-mono text-white/25 ml-auto">SOON</span>
+              <div className="grid grid-cols-3 gap-2">
+                {(['USDC', 'BESC'] as PaymentMethod[]).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setPaymentMethod(m)}
+                    className={`flex items-center gap-2 px-3 py-3 rounded-xl border transition-all ${
+                      paymentMethod === m
+                        ? 'border-lime-400/30 bg-lime-400/5'
+                        : 'border-white/[0.07] hover:border-white/20'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      paymentMethod === m ? 'border-lime-400' : 'border-white/20'
+                    }`}>
+                      {paymentMethod === m && <div className="w-2 h-2 rounded-full bg-lime-400" />}
+                    </div>
+                    <span className={`text-xs font-mono font-medium ${paymentMethod === m ? 'text-white' : 'text-white/40'}`}>
+                      {m === 'USDC' ? 'USDC' : '$FUSD'}
+                    </span>
+                  </button>
+                ))}
+                <div className="flex items-center gap-2 px-3 py-3 rounded-xl border border-white/[0.07] opacity-30 cursor-not-allowed">
+                  <div className="w-4 h-4 rounded-full border-2 border-white/20 shrink-0" />
+                  <span className="text-xs text-white/30 font-mono">Card</span>
+                  <span className="text-[8px] font-mono text-white/20 ml-auto">SOON</span>
                 </div>
               </div>
+              {paymentMethod === 'BESC' && (
+                <p className="text-[10px] text-lime-400/50 font-mono mt-1.5">
+                  $FUSD on BESC HyperChain — early sellers pay less as price appreciates.
+                </p>
+              )}
             </div>
 
             {/* Platform wallet */}
             <div>
-              <div className="text-xs text-white/40 font-mono mb-2">Send payment to</div>
+              <div className="text-xs text-white/40 font-mono mb-2">
+                Send payment to {paymentMethod === 'BESC' ? '(BESC HyperChain)' : '(EVM)'}
+              </div>
               <div
                 className="flex items-center gap-2 bg-[#0a0a0b] border border-white/[0.07] rounded-xl px-3 py-2.5 cursor-pointer group"
-                onClick={() => navigator.clipboard.writeText(PLATFORM_WALLET)}
+                onClick={() => navigator.clipboard.writeText(paymentMethod === 'BESC' ? FUSD_CONTRACT : PLATFORM_WALLET)}
               >
-                <span className="text-xs text-white/60 font-mono flex-1 truncate">{PLATFORM_WALLET}</span>
+                <span className="text-xs text-white/60 font-mono flex-1 truncate">
+                  {paymentMethod === 'BESC' ? FUSD_CONTRACT : PLATFORM_WALLET}
+                </span>
                 <span className="text-[10px] text-white/20 group-hover:text-white/50 font-mono transition-colors shrink-0">COPY</span>
               </div>
               <p className="text-[10px] text-white/20 font-mono mt-1.5 leading-relaxed">
-                Send exactly ${pkg.price} USDC to this address, then paste your tx hash below.
+                Send exactly ${pkg.price} {paymentMethod === 'BESC' ? 'FUSD' : 'USDC'} to this address, then paste your tx hash below.
               </p>
             </div>
 

@@ -22,11 +22,11 @@ const TIERS = [
   {
     key: 'VERIFIED',
     label: 'Verified',
-    price: '$1 USDC',
+    price: '$1 FUSD',
     color: 'border-white/10',
     activeColor: 'border-lime-400/40 bg-lime-400/[0.03]',
     badgeColor: 'text-lime-400 bg-lime-400/10 border-lime-400/20',
-    description: 'Social + optional KYC. Higher limits, verified badge.',
+    description: 'Pay $1 FUSD once — price only goes up. Early sellers pay less.',
     features: ['Verified badge on profile', 'Max job: $5,000', 'Priority in search', 'Review system access'],
     recommended: true,
   },

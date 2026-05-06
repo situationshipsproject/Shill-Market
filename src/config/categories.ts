@@ -8,6 +8,7 @@ export const CATEGORIES = [
   { icon: '🔍', name: 'Research & Alpha', slug: 'research-alpha', description: 'Market analysis, competitor research' },
   { icon: '⚖️', name: 'Brokerage', slug: 'brokerage', description: 'Middle-man services, KOL management' },
   { icon: '📋', name: 'Compliance', slug: 'compliance', description: 'Legal review, audits, entity setup' },
+  { icon: '🔗', name: 'BESC Ecosystem', slug: 'besc-ecosystem', description: 'BESC HyperChain projects, FUSD services, ecosystem work' },
 ] as const
 
 export type CategorySlug = typeof CATEGORIES[number]['slug']
