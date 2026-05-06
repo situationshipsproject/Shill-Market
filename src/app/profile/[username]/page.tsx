@@ -154,9 +154,10 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <div className="max-w-5xl mx-auto px-8 pb-24">
+      {/* relative + z-10 lifts content above the positioned banner element */}
+      <div className="relative z-10 max-w-5xl mx-auto px-8 pb-24">
 
-        {/* Profile header — avatar overlaps banner with negative margin */}
+        {/* Profile header — avatar overlaps banner */}
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8" style={{ marginTop: '-40px' }}>
           <div className="flex items-end gap-4">
             <div className="w-20 h-20 rounded-2xl border-4 border-[#0a0a0b] bg-lime-400 overflow-hidden relative flex items-center justify-center shrink-0 z-10">
