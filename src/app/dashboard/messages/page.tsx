@@ -53,7 +53,7 @@ function MessagesPageInner() {
   const [activeConv, setActiveConv] = useState<Conversation | null>(null)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
-  const [loadingConvs, setLoadingConvs] = useState(true)
+  const [loadingConvs, setLoadingConvs] = useState(false)
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -64,11 +64,16 @@ function MessagesPageInner() {
 
   const fetchConversations = useCallback(async () => {
     if (!privyUser?.id) return
-    const res = await fetch('/api/messages', { headers: { 'x-privy-user-id': privyUser.id } })
-    if (!res.ok) return
-    const data = await res.json()
-    setConversations(data.conversations ?? [])
-    setLoadingConvs(false)
+    setLoadingConvs(true)
+    try {
+      const res = await fetch('/api/messages', { headers: { 'x-privy-user-id': privyUser.id } })
+      if (res.ok) {
+        const data = await res.json()
+        setConversations(data.conversations ?? [])
+      }
+    } finally {
+      setLoadingConvs(false)
+    }
   }, [privyUser?.id])
 
   const fetchMessages = useCallback(async (conversationId: string) => {

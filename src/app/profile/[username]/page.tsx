@@ -148,7 +148,7 @@ export default function ProfilePage() {
       <Navbar />
 
       {/* Banner */}
-      <div className="relative h-40 bg-gradient-to-r from-[#111114] via-[#18181c] to-[#111114] border-b border-white/[0.05]">
+      <div className="relative h-40 overflow-hidden bg-gradient-to-r from-[#111114] via-[#18181c] to-[#111114] border-b border-white/[0.05]">
         {profile.bannerUrl && (
           <Image src={profile.bannerUrl} alt="Banner" fill className="object-cover" unoptimized />
         )}

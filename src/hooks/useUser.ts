@@ -13,6 +13,11 @@ interface DbUser {
   bio?: string | null
   avatarUrl?: string | null
   bannerUrl?: string | null
+  twitterUrl?: string | null
+  githubUrl?: string | null
+  tiktokUrl?: string | null
+  websiteUrl?: string | null
+  telegramUrl?: string | null
   tier: 'ANON' | 'VERIFIED' | 'ELITE' | 'INSTITUTION'
   isVerified: boolean
   kycCompleted: boolean

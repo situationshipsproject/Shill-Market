@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import Navbar from '@/components/shared/navbar/Navbar'
 import Sidebar from '@/components/dashboard/Sidebar'
@@ -8,16 +8,31 @@ import { useUser } from '@/hooks/useUser'
 
 export default function SettingsPage() {
   const { dbUser, privyUser } = useUser()
-  const [displayName, setDisplayName] = useState(dbUser?.displayName ?? '')
-  const [bio, setBio] = useState(dbUser?.bio ?? '')
-  const [avatarUrl, setAvatarUrl] = useState(dbUser?.avatarUrl ?? '')
-  const [bannerUrl, setBannerUrl] = useState(dbUser?.bannerUrl ?? '')
-  const [twitterUrl, setTwitterUrl] = useState((dbUser as { twitterUrl?: string })?.twitterUrl ?? '')
-  const [githubUrl, setGithubUrl] = useState((dbUser as { githubUrl?: string })?.githubUrl ?? '')
-  const [tiktokUrl, setTiktokUrl] = useState((dbUser as { tiktokUrl?: string })?.tiktokUrl ?? '')
-  const [websiteUrl, setWebsiteUrl] = useState((dbUser as { websiteUrl?: string })?.websiteUrl ?? '')
-  const [telegramUrl, setTelegramUrl] = useState((dbUser as { telegramUrl?: string })?.telegramUrl ?? '')
+  const [displayName, setDisplayName] = useState('')
+  const [bio, setBio] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [bannerUrl, setBannerUrl] = useState('')
+  const [twitterUrl, setTwitterUrl] = useState('')
+  const [githubUrl, setGithubUrl] = useState('')
+  const [tiktokUrl, setTiktokUrl] = useState('')
+  const [websiteUrl, setWebsiteUrl] = useState('')
+  const [telegramUrl, setTelegramUrl] = useState('')
   const [saving, setSaving] = useState(false)
+  const [initialized, setInitialized] = useState(false)
+
+  useEffect(() => {
+    if (!dbUser || initialized) return
+    setDisplayName(dbUser.displayName ?? '')
+    setBio(dbUser.bio ?? '')
+    setAvatarUrl(dbUser.avatarUrl ?? '')
+    setBannerUrl(dbUser.bannerUrl ?? '')
+    setTwitterUrl(dbUser.twitterUrl ?? '')
+    setGithubUrl(dbUser.githubUrl ?? '')
+    setTiktokUrl(dbUser.tiktokUrl ?? '')
+    setWebsiteUrl(dbUser.websiteUrl ?? '')
+    setTelegramUrl(dbUser.telegramUrl ?? '')
+    setInitialized(true)
+  }, [dbUser, initialized])
   const [saved, setSaved] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
