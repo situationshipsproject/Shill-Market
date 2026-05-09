@@ -79,18 +79,21 @@ function MessagesPageInner() {
   const fetchMessages = useCallback(async (conversationId: string) => {
     if (!privyUser?.id) return
     setLoadingMsgs(true)
-    const res = await fetch(`/api/messages/${conversationId}`, {
-      headers: { 'x-privy-user-id': privyUser.id },
-    })
-    if (!res.ok) { setLoadingMsgs(false); return }
-    const data = await res.json()
-    setMessages(data.messages ?? [])
-    setActiveConv(data.conversation)
-    setLoadingMsgs(false)
-    // clear unread badge locally
-    setConversations((prev) =>
-      prev.map((c) => (c.id === conversationId ? { ...c, unread: 0 } : c))
-    )
+    try {
+      const res = await fetch(`/api/messages/${conversationId}`, {
+        headers: { 'x-privy-user-id': privyUser.id },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data.messages ?? [])
+        setActiveConv(data.conversation)
+        setConversations((prev) =>
+          prev.map((c) => (c.id === conversationId ? { ...c, unread: 0 } : c))
+        )
+      }
+    } finally {
+      setLoadingMsgs(false)
+    }
   }, [privyUser?.id])
 
   // initial load
